@@ -7,46 +7,47 @@ RULES_MAK := $(PJDIR)/build/rules.mak
 ###############################################################################
 # Gather all flags.
 #
-export _CFLAGS 	:= $(PJ_CFLAGS) $(CFLAGS)
+export _CFLAGS 	:= $(PJ_CFLAGS) $(CFLAGS) $(CC_INC)../../../libwebsockets/include
 export _CXXFLAGS:= $(PJ_CXXFLAGS) $(CFLAGS)
-export _LDFLAGS := $(PJ_LDFLAGS) $(PJ_LDLIBS) $(LDFLAGS)
+export _LDFLAGS := $(PJ_LDFLAGS) $(PJ_LDLIBS) $(LDFLAGS) -lwebsockets -lssl -lpthread -lcurl
 export _LDXXFLAGS := $(PJ_LDXXFLAGS) $(PJ_LDXXLIBS) $(LDFLAGS)
 
 SRCDIR := ../src/samples
 OBJDIR := ./output/samples-$(TARGET_NAME)
 BINDIR := ../bin/samples/$(TARGET_NAME)
 
-SAMPLES := auddemo \
-	   aviplay \
-	   aectest \
-	   clidemo \
-	   confsample \
-	   encdec \
-	   httpdemo \
-	   icedemo \
-	   jbsim \
-	   latency \
-	   level \
-	   mix \
-	   pjsip-perf \
-	   pcaputil \
-	   playfile \
-	   playsine \
-	   recfile \
-	   resampleplay \
-	   simpleua \
-	   simple_pjsua \
-	   sipecho \
-	   siprtp \
-	   sipstateless \
-	   stateful_proxy \
-	   stateless_proxy \
-	   stereotest \
-	   streamutil \
-	   strerror \
-	   tonegen \
-	   vid_codec_test \
-	   vid_streamutil
+SAMPLES := simple_pjsua
+#	   auddemo \
+#	   aviplay \
+#	   aectest \
+#	   clidemo \
+#	   confsample \
+#	   encdec \
+#	   httpdemo \
+#	   icedemo \
+#	   jbsim \
+#	   latency \
+#	   level \
+#	   mix \
+#	   pjsip-perf \
+#	   pcaputil \
+#	   playfile \
+#	   playsine \
+#	   recfile \
+#	   resampleplay \
+#	   simpleua \
+#	   simple_pjsua \
+#	   sipecho \
+#	   siprtp \
+#	   sipstateless \
+#	   stateful_proxy \
+#	   stateless_proxy \
+#	   stereotest \
+#	   streamutil \
+#	   strerror \
+#	   tonegen \
+#	   vid_codec_test \
+#	   vid_streamutil
 
 PJSUA2_SAMPLES := pjsua2_demo
 

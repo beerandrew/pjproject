@@ -398,7 +398,7 @@ static void systest_rec_audio(void)
 
     pool = pjsua_pool_create("rectest", 512, 512);
 
-    status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id);
+    status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, NULL);
     if (status != PJ_SUCCESS)
 	goto on_return;
 
@@ -805,7 +805,7 @@ static void systest_latency_test(void)
     play_slot = pjsua_player_get_conf_port(play_id);
 
     rec_wav_file = pj_str(add_path(doc_path, WAV_LATENCY_OUT_PATH));
-    status = pjsua_recorder_create(&rec_wav_file, 0, NULL, -1, 0, &rec_id);
+    status = pjsua_recorder_create(&rec_wav_file, 0, NULL, -1, 0, &rec_id, NULL);
     if (status != PJ_SUCCESS)
 	goto on_return;
 
@@ -974,7 +974,7 @@ static void systest_aec_test(void)
 
     status = pjsua_recorder_create(
                  pj_cstr(&tmp, add_path(doc_path, AEC_REC_PATH)), 0, 0, -1,
-                 0, &writer_id);
+                 0, &writer_id, NULL);
     if (status != PJ_SUCCESS) {
 	PJ_PERROR(1,(THIS_FILE, status, "Error writing WAV file %s",
 		     AEC_REC_PATH));

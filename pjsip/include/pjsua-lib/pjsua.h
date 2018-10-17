@@ -7183,7 +7183,8 @@ PJ_DECL(pj_status_t) pjsua_recorder_create(const pj_str_t *filename,
 					   void *enc_param,
 					   pj_ssize_t max_size,
 					   unsigned options,
-					   pjsua_recorder_id *p_id);
+					   pjsua_recorder_id *p_id,
+                       pj_status_t	(*cb2)(pjmedia_port*, pjmedia_frame*));
 
 
 /**

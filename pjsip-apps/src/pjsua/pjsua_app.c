@@ -1376,7 +1376,7 @@ static pj_status_t app_init()
     /* Optionally create recorder file, if any. */
     if (app_config.rec_file.slen) {
 	status = pjsua_recorder_create(&app_config.rec_file, 0, NULL, 0, 0,
-				       &app_config.rec_id);
+				       &app_config.rec_id, NULL);
 	if (status != PJ_SUCCESS)
 	    goto on_error;
 

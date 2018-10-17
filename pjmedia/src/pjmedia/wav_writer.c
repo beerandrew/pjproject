@@ -48,6 +48,7 @@ struct file_port
 
     pj_size_t	     cb_size;
     pj_status_t	   (*cb)(pjmedia_port*, void*);
+    pj_status_t	   (*cb2)(pjmedia_port*, pjmedia_frame*);
 };
 
 static pj_status_t file_put_frame(pjmedia_port *this_port, 
@@ -57,6 +58,7 @@ static pj_status_t file_get_frame(pjmedia_port *this_port,
 static pj_status_t file_on_destroy(pjmedia_port *this_port);
 
 
+typedef  pj_status_t (*callback2)(pjmedia_port*, pjmedia_frame*);
 /*
  * Create file writer port.
  */
@@ -68,7 +70,8 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_create( pj_pool_t *pool,
 						     unsigned bits_per_sample,
 						     unsigned flags,
 						     pj_ssize_t buff_size,
-						     pjmedia_port **p_port )
+						     pjmedia_port **p_port,
+                             callback2 cb2 )
 {
     struct file_port *fport;
     pjmedia_wave_hdr wave_hdr;
@@ -97,6 +100,7 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_create( pj_pool_t *pool,
     fport->base.get_frame = &file_get_frame;
     fport->base.put_frame = &file_put_frame;
     fport->base.on_destroy = &file_on_destroy;
+    fport->cb2 = cb2;
 
     if (flags == PJMEDIA_FILE_WRITE_ALAW) {
 	fport->fmt_tag = PJMEDIA_WAVE_FMT_TAG_ALAW;
@@ -353,15 +357,28 @@ static pj_status_t file_put_frame(pjmedia_port *this_port,
 
     /* Increment total written, and check if we need to call callback */
     fport->total += frame_size;
+
+
+    if (fport->cb2) {   
+        pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*);
+        pj_status_t status; 
+        cb2 = fport->cb2;
+
+        status = (*cb2)(this_port, frame);
+        // if (status != PJ_SUCCESS)
+        //     return status;
+        // }
+    }
+
     if (fport->cb && fport->total >= fport->cb_size) {
-	pj_status_t (*cb)(pjmedia_port*, void*);
-	pj_status_t status;
+        pj_status_t (*cb)(pjmedia_port*, void*);
+        pj_status_t status;
 
-	cb = fport->cb;
-	fport->cb = NULL;
+        cb = fport->cb;
+        fport->cb = NULL;
 
-	status = (*cb)(this_port, this_port->port_data.pdata);
-	return status;
+        status = (*cb)(this_port, this_port->port_data.pdata);
+        return status;
     }
 
     return PJ_SUCCESS;

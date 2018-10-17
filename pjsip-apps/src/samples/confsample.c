@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 					      clock_rate, channel_count,
 					      samples_per_frame, 
 					      bits_per_sample, 0, 0, 
-					      &rec_port);
+					      &rec_port, NULL);
     if (status != PJ_SUCCESS) {
 	app_perror(THIS_FILE, "Unable to create WAV writer", status);
 	return 1;

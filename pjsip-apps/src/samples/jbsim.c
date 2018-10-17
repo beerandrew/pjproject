@@ -536,7 +536,7 @@ static pj_status_t test_init(void)
 					    PJMEDIA_PIA_BITS(&g_app.rx->port->info),
 					    0,
 					    0,
-					    &g_app.rx_wav);
+					    &g_app.rx_wav, NULL);
     if (status != PJ_SUCCESS) {
 	jbsim_perror("Error creating output WAV file", status);
 	goto on_error;

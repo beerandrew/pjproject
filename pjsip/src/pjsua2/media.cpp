@@ -425,7 +425,7 @@ void AudioMediaRecorder::createRecorder(const string &file_name,
 					     NULL,
 					     -1,
 					     options,
-					     &recorderId) );
+					     &recorderId, NULL) );
 
     /* Get media port id. */
     id = pjsua_recorder_get_conf_port(recorderId);

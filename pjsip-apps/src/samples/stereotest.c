@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 						REC_CLOCK_RATE / 1000,
 						NBITS,
 						0, 0, 
-						&file_port);
+						&file_port, NULL);
 	if (status != PJ_SUCCESS) {
 	    app_perror(THIS_FILE, "Unable to open file", status);
 	    return 1;

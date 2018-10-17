@@ -1390,7 +1390,8 @@ PJ_DEF(pj_status_t) pjsua_recorder_create( const pj_str_t *filename,
 					   void *enc_param,
 					   pj_ssize_t max_size,
 					   unsigned options,
-					   pjsua_recorder_id *p_id)
+					   pjsua_recorder_id *p_id,
+                       pj_status_t	   (*cb2)(pjmedia_port*, pjmedia_frame*))
 {
     enum Format
     {
@@ -1470,7 +1471,7 @@ PJ_DEF(pj_status_t) pjsua_recorder_create( const pj_str_t *filename,
 						pjsua_var.mconf_cfg.channel_count,
 						pjsua_var.mconf_cfg.samples_per_frame,
 						pjsua_var.mconf_cfg.bits_per_sample,
-						options, 0, &port);
+						options, 0, &port, cb2);
     } else {
 	PJ_UNUSED_ARG(enc_param);
 	port = NULL;
