@@ -27,7 +27,6 @@ char* str_copy(char *str) {
 	return copied;
 }
 
-pthread_mutex_t ws_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t call_info_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t write_ext_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -1014,7 +1013,6 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void * create_websocket(void *vargp) {
-	pthread_mutex_lock(&ws_mutex);
 	printf("<<**>> create_websocket started");
 	struct call_info *this_call_info = (struct call_info *)vargp;
 	printf("<<**>> create_websocket (threadid:%d, call_id:%d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
@@ -1131,8 +1129,6 @@ void * create_websocket(void *vargp) {
 		printf("Error creating the client\n");
 		return NULL;
 	}
-
-	pthread_mutex_unlock(&ws_mutex);
 
 	// Main loop runs till bExit is true, which forces an exit of this loop
 	// TODO: need to exit from websocket callback when disconnected
