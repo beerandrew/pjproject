@@ -35,12 +35,12 @@ static int bExit;
 int didDestroy = 0;
 
 struct profile_info {
-	char *phone;
-	char *name;
+	char phone[20];
+	char name[200];
 	int number_commands;
-	char *user_input_list[100];
+	char user_input_list[100][1000];
 	int cmdLen[100];
-	char **cmd[100];
+	char cmd[100][10][100];
 	int thread_cnt;
 	int finished_thread_cnt;
 };
@@ -218,15 +218,6 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 			pi->finished_thread_cnt ++;
 			if (pi->finished_thread_cnt == pi->thread_cnt) {
 				printf("<<**>> do free of profile_info\n");
-				free(pi->phone);
-				free(pi->name);
-				int x = 0, y = 0;
-				for (x = 0; x < pi->number_commands; x ++) {
-					for (y = 0; y < pi->cmdLen[x]; y ++) {
-						free(pi->cmd[x][y]);
-					}
-					free(pi->cmd[x]);
-				}
 			} else {
 				printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
 			}
@@ -1364,8 +1355,8 @@ void on_speak_command(char *to_speak, pjsua_call_id call_id) {
 	printf("Speak %s call_id: %d", to_speak, call_id);
 	
 	download_wav(to_speak);
-	char* wavfile = str_copy(to_speak);
-	strcat(wavfile, ".wav");
+	char wavfile[200];
+    sprintf(wavfile, "%s.wav", to_speak);
 
 	pj_status_t status;
 
@@ -1383,7 +1374,6 @@ void on_speak_command(char *to_speak, pjsua_call_id call_id) {
 	// 	 unsigned options,
 	// 	 pjsua_player_id *p_id)
 	status = pjsua_player_create(&filename, PJMEDIA_FILE_NO_LOOP, &player_id);
-	free(wavfile);
 	if (status != PJ_SUCCESS)
 		goto on_return;
 
@@ -1618,7 +1608,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			return;
 		}
 		struct profile_info *pi = &current_profile_info;
-		pi->name = str_copy(args[1]);
+		strcpy(pi->name, args[1]);
 		pi->number_commands = 0;
 
 		char new_line[300];
@@ -1628,10 +1618,10 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			printf("Run profile -> new line -> %s\n", new_line);
 			if (n_profile_lines == 0) {
 				new_line[strcspn(new_line, "\n")] = 0;
-				pi->phone = str_copy(new_line);
+				strcpy(pi->phone, new_line);
 				printf("analyze profile, phone = %s\n", pi->phone);
 			} else if (n_profile_lines % 3 == 1) {
-				pi->user_input_list[pi->number_commands] = str_copy(new_line);
+				strcpy(pi->user_input_list[pi->number_commands], new_line);
 			} else if (n_profile_lines %3 == 2) {
 				char *new_args[sizeof new_line];
 				size_t new_n = 0, new_argv = 0;
@@ -1648,12 +1638,11 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 				}
 
 				pi->cmdLen[pi->number_commands] = new_argv;
-				pi->cmd[pi->number_commands] = malloc(sizeof(char*)*new_argv);
 				
 				int k = 0;
 				for (k = 0; k < new_argv; k ++ ){
 					printf("arg[%d]/%d , %s\n", k, new_argv, new_args[k]);
-					pi->cmd[pi->number_commands][k] = str_copy(new_args[k]);
+					strcpy(pi->cmd[pi->number_commands][k], new_args[k]);
 				}
 				if (new_argv == 4 && strcmp(new_args[1], "-L") == 0 && strcmp(new_args[2], "-T") == 0) {
 					strcpy(listfilename, new_args[3]);
