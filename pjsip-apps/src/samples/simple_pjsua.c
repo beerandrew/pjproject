@@ -384,7 +384,7 @@ void *recorder_thread_func(void *param) {
 
 	char	    doc_path[PJ_MAXPATH] = {0};
 	const pj_str_t filename = pj_str(WAV_FILE);
-	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe, NULL);
+	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe);
 	pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
 
 	if (status != PJ_SUCCESS)
