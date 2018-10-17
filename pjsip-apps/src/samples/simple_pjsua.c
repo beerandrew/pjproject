@@ -1342,7 +1342,7 @@ void call_deinit_tonegen(pjsua_call_id call_id)
 }
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	printf("Dial %s", dial_number);
+	printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
 	call_play_digit(this_call_info->call_id, dial_number);
 }
 void on_speak_command(char *to_speak, pjsua_call_id call_id) {
