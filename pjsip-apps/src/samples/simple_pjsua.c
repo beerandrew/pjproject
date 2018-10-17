@@ -1285,7 +1285,7 @@ struct call_dtmf_data *call_init_tonegen(pjsua_call_id call_id)
   struct call_dtmf_data *cd;
   pjsua_call_info ci;
 
-  pool = pjsua_pool_create("mycall%p", 4000, 4000);
+  pool = pjsua_pool_create("mycall", 500, 500);
   
   cd = PJ_POOL_ZALLOC_T(pool, struct call_dtmf_data);
   cd->pool = pool;
