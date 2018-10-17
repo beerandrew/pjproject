@@ -585,7 +585,7 @@ int getDifference(char *a, char *b)
     int i;
     int j;
 
-    for (i = 1; i <= strlen(a); i++)
+    for (i = 0; i <= strlen(a); i++)
         mat1[i] = i;
 
     mat2[0] = 1;
