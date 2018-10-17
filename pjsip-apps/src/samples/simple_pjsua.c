@@ -607,6 +607,17 @@ int getDifference(char *a, char *b)
         mat2[0] = mat1[0] + 1;
     }
 	int ret = mat1[strlen(a)];
+    if (ret < 0) {
+        printf("\n");
+        for(i = 0; i <= strlen(a); i ++) {
+            printf("%d ", mat1[i]);
+        }
+        printf("\n");
+        for(i = 0; i <= strlen(a); i ++) {
+            printf("%d ", mat2[i]);
+        }
+        printf("\n");
+    }
 	free(mat1);
 	free(mat2);
     // It's row #1 because we swap rows at the end of each outer loop,
