@@ -618,6 +618,9 @@ int getDifference(char *a, char *b)
         }
         printf("\n");
     }
+    if (ret < 0) {
+        ret = 1000;
+    }
 	free(mat1);
 	free(mat2);
     // It's row #1 because we swap rows at the end of each outer loop,
