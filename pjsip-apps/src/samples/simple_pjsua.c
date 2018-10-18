@@ -1491,7 +1491,17 @@ void *make_call_to_profile(void *vargp) {
 
 	pj_str_t uri = pj_str(contact);
 	printf(">>> going to make call to profile, %x %x %x \n", shared_acc_id, &uri,  &this_call_info->call_id);
-	status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, NULL, &this_call_info->call_id);
+
+    // Custom header
+    pjsua_msg_data msg_data_;
+    pjsip_generic_string_hdr warn;
+    pj_str_t hname = pj_str("Custom");
+    pj_str_t hvalue = pj_str("123456789");
+    pjsua_msg_data_init(&msg_data_);
+    pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
+    pj_list_push_back(&msg_data_.hdr_list, &warn);
+
+	status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
 	if (status != PJ_SUCCESS)
 		error_exit("Error making call", status);
 	
@@ -1745,8 +1755,8 @@ int main(int argc, char *argv[])
 	// download_wav("Other Options");
 	// return 0;
 
-	pthread_t send_thread_id;
-	pthread_create(&send_thread_id, NULL, send_thread_func, NULL);
+	// pthread_t send_thread_id;
+	// pthread_create(&send_thread_id, NULL, send_thread_func, NULL);
 
 	setvbuf (stdout, NULL, _IONBF, 0);
     pjsua_acc_id acc_id;
