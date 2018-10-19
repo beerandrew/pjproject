@@ -49,7 +49,7 @@ struct call_info {
 	int disconnected;
 	struct lws *wsiTest; // WebSocket interface
 	pthread_t ws_thread_id; 
-	char *globalBuf;
+	char globalBuf[1000000];
 	int bufferSize;
 	pjmedia_port* media_port;
 	pjsua_call_id call_id;
@@ -148,7 +148,6 @@ void init_call_info(struct call_info *ci) {
 	ci->isProfileI = 0;
 	ci->disconnected = 0;
 	ci->wsiTest = NULL;// malloc( sizeof(struct lws) );
-	ci->globalBuf = NULL;
 	ci->media_port = NULL;
 	ci->pi = NULL;
 	ci->bufferSize = 0;
@@ -296,17 +295,6 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 
 		pthread_mutex_lock(&count_mutex);
 		 
-		char *new_ptr = realloc(this_call_info->globalBuf, this_call_info->bufferSize + frame->size);
-
-		if (new_ptr == NULL) {
-			printf("Couldn't realloc");
-			if (this_call_info->globalBuf)
-				free(this_call_info->globalBuf);
-			exit(1);
-		} else {
-			this_call_info->globalBuf = new_ptr;
-		}
-
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
 		this_call_info->bufferSize += frame->size;
@@ -875,8 +863,6 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			this_call_info->bufferSize = 0;
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE4\n");
 			// printf("Freeing %x...", this_call_info->globalBuf);
-			free(this_call_info->globalBuf);
-			this_call_info->globalBuf = NULL;
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE5\n");
 			pthread_mutex_unlock(&count_mutex);
 		}
