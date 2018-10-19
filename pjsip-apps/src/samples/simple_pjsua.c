@@ -281,28 +281,22 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 
 	struct call_info *this_call_info;
 	int call_index;
-	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_from_media_port(port);
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index != -1) {
 		if (frame->size == 0)
 			return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
 		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
-
-		pthread_mutex_lock(&count_mutex);
 		 
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
 		this_call_info->bufferSize += frame->size;
 
 		// printf("<<**>> c\n");
-
-		pthread_mutex_unlock(&count_mutex);
 
 
 		if (this_call_info->wsiTest != NULL){
