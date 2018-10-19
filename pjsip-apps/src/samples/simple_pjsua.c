@@ -105,12 +105,12 @@ void call_play_digit(pjsua_call_id call_id, const char *digits);
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
+	// printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
 	call_play_digit(this_call_info->call_id, dial_number);
 }
 void on_speak_command(char *to_speak, pjsua_call_id call_id) {
-	printf("<<**>> on_speak_command started");
-	printf("Speak %s call_id: %d", to_speak, call_id);
+	// printf("<<**>> on_speak_command started");
+	// printf("Speak %s call_id: %d", to_speak, call_id);
 	
 	download_wav(to_speak);
 	char wavfile[200];
@@ -153,7 +153,7 @@ void on_speak_command(char *to_speak, pjsua_call_id call_id) {
 	if (status != PJ_SUCCESS)
 		goto on_return;
 
-	printf("<<**>> on_speak_command ended");
+	// printf("<<**>> on_speak_command ended");
 	return;
 
 on_return:
@@ -163,7 +163,7 @@ on_return:
 	pjsua_player_destroy(player_id);
 	if (pool)
 	pj_pool_release(pool);
-	printf("<<**>> on_speak_command ended");
+	// printf("<<**>> on_speak_command ended");
 }
 
 int find_index_from_call_info_pointer(struct call_info *to_find) {
@@ -218,7 +218,7 @@ int find_index_profile_insert() {
 			return i;
 		}
 	}
-	printf("<<**>> find_index_profile_insert not found by isProfileI 1\n");
+	// printf("<<**>> find_index_profile_insert not found by isProfileI 1\n");
 	return -1;	
 }
 void init_call_info(struct call_info *ci) {
@@ -242,7 +242,7 @@ void *make_call_to_profile(void *vargp);
 /* Callback called by the library when call's state has changed */
 static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 {
-	printf("<<**>> on_call_state started");
+	// printf("<<**>> on_call_state started");
     pjsua_call_info ci;
 
     PJ_UNUSED_ARG(e);
@@ -264,23 +264,23 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 		pthread_mutex_unlock(&call_info_mutex);
 
 		if (call_index == -1) {
-			printf("call_index == 0 and returning\n");
+			// printf("call_index == 0 and returning\n");
 			return;
 		}
 
-		printf("<<**>> disconnect call (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
+		// printf("<<**>> disconnect call (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 
-		printf("<<**>>disconnect rec_slot callinfo = %x rec_slot = %d\n", this_call_info, this_call_info->rec_slot);
+		// printf("<<**>>disconnect rec_slot callinfo = %x rec_slot = %d\n", this_call_info, this_call_info->rec_slot);
 		
 		if (this_call_info->rec_slot == PJSUA_INVALID_ID) {
-			printf("<<**>>Record is not created properly\n");
+			// printf("<<**>>Record is not created properly\n");
 		} else {
 			if (ci.conf_slot == PJSUA_INVALID_ID) {
-				printf("<<**>>Call source slot is invalid\n");
+				// printf("<<**>>Call source slot is invalid\n");
 			} else {
-				printf("<<**>>Going to start record disconnect\n");
+				// printf("<<**>>Going to start record disconnect\n");
 				pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
-				printf("<<**>>Finished record disconnect\n");
+				// printf("<<**>>Finished record disconnect\n");
 			}
 		}
 		// TODO: destroy recorder
@@ -292,23 +292,23 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 		if (this_call_info->done_ext > 0) {
 			pi->finished_thread_cnt ++;
 			if (pi->finished_thread_cnt == pi->thread_cnt) {
-				printf("<<**>> do free of profile_info\n");
+				// printf("<<**>> do free of profile_info\n");
 			} else {
-				printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
+				// printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
 			}
 		} else if(this_call_info->isProfileI == 0) {
 			if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
-				printf("<<**>> restarting call since unexpected transcription received\n");
+				// printf("<<**>> restarting call since unexpected transcription received\n");
 				struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
 				pthread_t make_profile_call_thread_id;
 				thread_param->pi = pi;
 				thread_param->number = this_call_info->ci;
 				thread_param->tried_cnt = this_call_info->tried_cnt + 1;
 
-				printf(">>> redo call since did not get result %d\n", this_call_info->ci);
+				// printf(">>> redo call since did not get result %d\n", this_call_info->ci);
 				pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
 			} else {
-				printf("<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
+				// printf("<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
 
 				// pthread_mutex_lock(&write_ext_mutex);
 
@@ -350,7 +350,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 
 		pthread_mutex_unlock(&call_info_mutex);
 	}
-	printf("<<**>> on_call_state ended");
+	// printf("<<**>> on_call_state ended");
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 	// // printf("<<**>> on_putframe started\n");
@@ -389,7 +389,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
 		}
 	} else {
-		printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
+		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
 	
 	return 0;
@@ -556,7 +556,7 @@ static void process_object(json_value* value, int depth)
         length = value->u.object.length;
         for (x = 0; x < length; x++) {
                 print_depth_shift(depth);
-                printf("object[%d].name = %s\n", x, value->u.object.values[x].name);
+                // printf("object[%d].name = %s\n", x, value->u.object.values[x].name);
                 process_value(value->u.object.values[x].value, depth+1);
         }
 }
@@ -568,7 +568,7 @@ static void process_array(json_value* value, int depth)
                 return;
         }
         length = value->u.array.length;
-        printf("array\n");
+        // printf("array\n");
         for (x = 0; x < length; x++) {
                 process_value(value->u.array.values[x], depth);
         }
@@ -664,15 +664,15 @@ int getDifference(char *a, char *b)
     }
 	int ret = mat1[strlen(a)];
     if (ret < 0) {
-        printf("\n");
+        // printf("\n");
         for(i = 0; i <= strlen(a); i ++) {
-            printf("%d ", mat1[i]);
+            // printf("%d ", mat1[i]);
         }
-        printf("\n");
+        // printf("\n");
         for(i = 0; i <= strlen(a); i ++) {
-            printf("%d ", mat2[i]);
+            // printf("%d ", mat2[i]);
         }
-        printf("\n");
+        // printf("\n");
     }
     if (ret < 0) {
         ret = 1000;
@@ -872,23 +872,23 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								char lcp[100];
 								strcpy(lcp,  this_call_info->prv_ran_cmd_param);
 								if (lci < pi->number_commands - 1 && strcmp(pi->cmd[lci+1][0], "EXT") == 0) {
-									printf("<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]);
+									// printf("<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]);
 									pthread_mutex_lock(&write_ext_mutex);
 
 									FILE *fp = fopen (pi->cmd[lci+1][1], "a"); 
-									printf("<start>--------------<start>\n");
-									printf("<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
+									// printf("<start>--------------<start>\n");
+									// printf("<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
 									fprintf(fp, "<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
 									fprintf(fp, "%s\n", transcription);
 									fprintf(fp, "<end>--------------<end>\n");
 									fclose(fp);
 									this_call_info->done_ext = 1;
 									pthread_mutex_unlock(&write_ext_mutex);
-									printf("<<**>> current transcription result save end\n");
+									// printf("<<**>> current transcription result save end\n");
 								}
 
-								printf("<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription);
-								printf("<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference);
+								// printf("<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription);
+								// printf("<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference);
 
 								pjsua_call_info ci;
     							pjsua_call_get_info(this_call_info->call_id, &ci);
@@ -1055,7 +1055,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
   char *ptr = realloc(mem->memory, mem->size + realsize + 1);
   if(ptr == NULL) {
     /* out of memory! */ 
-    printf("not enough memory (realloc returned NULL)\n");
+    // printf("not enough memory (realloc returned NULL)\n");
     return 0;
   }
  
@@ -1361,7 +1361,7 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
   pjmedia_tone_digit d[16];
   unsigned i, count = strlen(digits);
   struct call_dtmf_data *cd;
-  printf("count: %d", count);
+//   printf("count: %d", count);
 
   cd = (struct call_dtmf_data*) pjsua_call_get_user_data(call_id);
   if (!cd)
@@ -1527,7 +1527,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 	}
 
     for (n = 0; n < argv; n++) {
-        printf("Argument %zu: %s\n", n, args[n]);
+        // printf("Argument %zu: %s\n", n, args[n]);
     }
     puts("----------");
 
