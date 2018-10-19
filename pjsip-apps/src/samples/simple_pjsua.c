@@ -44,6 +44,7 @@ struct profile_info {
 	int finished_thread_cnt;
 };
 
+char binary_buf[1000000];
 struct call_info {
 	int isProfileI;
 	int disconnected;
@@ -854,11 +855,10 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE1\n");
 			pthread_mutex_lock(&count_mutex);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE2\n");
-			char *binary_buf = malloc(sizeof(char) * (LWS_PRE + this_call_info->bufferSize));
-			// char binary_buf[LWS_PRE + this_call_info->bufferSize]; // 1 MB buffer
+			// char *binary_buf = malloc(sizeof(char) * (LWS_PRE + this_call_info->bufferSize));
 			memcpy(&binary_buf[LWS_PRE], this_call_info->globalBuf, this_call_info->bufferSize);
 			lws_write(wsi, &binary_buf[LWS_PRE], this_call_info->bufferSize, LWS_WRITE_BINARY);
-			free(binary_buf);
+			// free(binary_buf);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE3\n");
 			this_call_info->bufferSize = 0;
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE4\n");
