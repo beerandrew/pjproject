@@ -1017,7 +1017,7 @@ void * create_websocket(void *vargp) {
 
 	/* allow whatever auth the server speaks */
 	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-	curl_easy_setopt(hnd, CURLOPT_USERPWD, "f4b4d34f-fff0-47ce-a07d-8c44d2d220f7:JIVyMjtQbqLw");
+	curl_easy_setopt(hnd, CURLOPT_USERPWD, "2f90c29a-4b2d-4e7c-902d-3841b604fb44:dwYf8rffWuyK");
 
 	/* send all data to this function  */ 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
