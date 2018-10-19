@@ -1177,7 +1177,7 @@ void * create_websocket(void *vargp) {
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
-	// printf("<<**>> updated wsiTest on create_websocket %d\n", this_call_info->wsiTest);
+	printf("<<**>> updated wsiTest on create_websocket %X\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
 	{
 		printf("Error creating the client\n");
