@@ -52,7 +52,7 @@ struct call_info {
 	pthread_t ws_thread_id; 
 	char globalBuf[1000000];
 	int bufferSize;
-	pjmedia_port* media_port;
+	// pjmedia_port* media_port;
 	pjsua_call_id call_id;
 	pjsua_recorder_id rec_id;
 	pjsua_conf_port_id rec_slot;
@@ -78,6 +78,12 @@ struct call_to_profile_with_number {
 	int tried_cnt;
 };
 
+struct pjsua_player_eof_data
+{
+    pj_pool_t          *pool;
+    pjsua_player_id player_id;
+};
+
 struct call_info **current_calls;
 // struct lws *wsiTest; // WebSocket interface1
 // char *globalBuf = NULL;//1
@@ -92,6 +98,74 @@ char response_list[100][1000];
 char user_input_list[100][1000];
 int user_input_cnt = 0;
 pjsua_acc_id *shared_acc_id = NULL;
+
+pjmedia_port *player_media_port;
+
+void call_play_digit(pjsua_call_id call_id, const char *digits);
+static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args);
+
+void on_dial_command(struct call_info *this_call_info, char *dial_number) {
+	printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
+	call_play_digit(this_call_info->call_id, dial_number);
+}
+void on_speak_command(char *to_speak, pjsua_call_id call_id) {
+	printf("<<**>> on_speak_command started");
+	printf("Speak %s call_id: %d", to_speak, call_id);
+	
+	download_wav(to_speak);
+	char wavfile[200];
+    sprintf(wavfile, "%s.wav", to_speak);
+
+	pj_status_t status;
+
+	// Send starts
+	pjsua_call_info ci;
+	pjsua_call_get_info(call_id, &ci);
+
+	pj_pool_t *pool = NULL;
+	pjsua_player_id player_id = PJSUA_INVALID_ID;
+	pjsua_conf_port_id player_slot = PJSUA_INVALID_ID;
+	status = PJ_SUCCESS;
+
+	const pj_str_t filename = pj_str(wavfile);
+	// ( const pj_str_t *filename,
+	// 	 unsigned options,
+	// 	 pjsua_player_id *p_id)
+	status = pjsua_player_create(&filename, PJMEDIA_FILE_NO_LOOP, &player_id);
+	if (status != PJ_SUCCESS)
+		goto on_return;
+
+	pool = pjsua_pool_create("player%p", 512, 512);
+	struct pjsua_player_eof_data *eof_data = PJ_POOL_ZALLOC_T(pool, struct pjsua_player_eof_data);
+	eof_data->pool = pool;
+	eof_data->player_id = player_id;
+
+	status = pjsua_player_get_port(player_id, &player_media_port);
+	if (status != PJ_SUCCESS)
+		goto on_return;
+	pjmedia_wav_player_set_eof_cb(player_media_port, eof_data, &on_pjsua_wav_file_end_callback);
+
+	player_slot = pjsua_player_get_conf_port(player_id);
+	
+	pjsua_player_set_pos(player_id, 0);
+	
+	status = pjsua_conf_connect(player_slot, pjsua_call_get_conf_port(call_id));
+	if (status != PJ_SUCCESS)
+		goto on_return;
+
+	printf("<<**>> on_speak_command ended");
+	return;
+
+on_return:
+	if (player_slot != PJSUA_INVALID_ID)
+	pjsua_conf_disconnect(player_slot, ci.conf_slot);
+	if (player_id != PJSUA_INVALID_ID)
+	pjsua_player_destroy(player_id);
+	if (pool)
+	pj_pool_release(pool);
+	printf("<<**>> on_speak_command ended");
+}
+
 int find_index_from_call_info_pointer(struct call_info *to_find) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
@@ -115,7 +189,9 @@ int find_index_from_call_id(pjsua_call_id call_id) {
 int find_index_from_media_port(pjmedia_port* media_port) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
-		if (current_calls[i]->media_port == media_port) {
+		pjmedia_port *port;
+		pjsua_recorder_get_port(current_calls[i]->rec_id, &port);
+		if (port->info.signature == media_port->info.signature) {
 			return i;
 		}
 	}
@@ -149,7 +225,7 @@ void init_call_info(struct call_info *ci) {
 	ci->isProfileI = 0;
 	ci->disconnected = 0;
 	ci->wsiTest = NULL;// malloc( sizeof(struct lws) );
-	ci->media_port = NULL;
+	// ci->media_port = NULL;
 	ci->pi = NULL;
 	ci->bufferSize = 0;
 	ci->call_id = -1;
@@ -281,22 +357,28 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 
 	struct call_info *this_call_info;
 	int call_index;
+	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_from_media_port(port);
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
+	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index != -1) {
 		if (frame->size == 0)
 			return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
 		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
+
+		pthread_mutex_lock(&count_mutex);
 		 
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
 		this_call_info->bufferSize += frame->size;
-
+		// printf("BUF:%d\n", this_call_info->bufferSize);
 		// printf("<<**>> c\n");
+
+		pthread_mutex_unlock(&count_mutex);
 
 
 		if (this_call_info->wsiTest != NULL){
@@ -307,7 +389,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
 			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
 		}
 	} else {
-		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
+		printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
 	
 	return 0;
@@ -330,7 +412,7 @@ void *recorder_thread_func(void *param) {
 
 	if (call_index == -1) {
 		printf("recorder thread func didnot found index by call_id\n"  );
-		return;
+		return NULL;
 	}
 
 	printf("<<**>> recorder_thread_func  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
@@ -358,7 +440,7 @@ void *recorder_thread_func(void *param) {
 	char	    doc_path[PJ_MAXPATH] = {0};
 	const pj_str_t filename = pj_str(WAV_FILE);
 	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe);
-	pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
+	// pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
 
 	if (status != PJ_SUCCESS)
 	goto on_return;
@@ -388,6 +470,7 @@ on_return:
 	pjsua_recorder_destroy(rec_id);
 	printf("<<**>> unexpected on_return destroy rec_id");
 	printf("<<**>> recorder_thread_func ended");
+    return NULL;
 }
 
 /* Callback called by the library when call's media state has changed */
@@ -655,7 +738,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLIENT_RECEIVE:
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
-			// printf("[Test Protocol] Received data: \"%s\"\n", (char*)in);
+			printf("[Test Protocol] Received data: \"%s\"\n", (char*)in);
 			// Parse JSON
 			json_char* json;
         	json_value* value;
@@ -842,7 +925,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 		// The server notifies us that we can write data
 	case LWS_CALLBACK_CLIENT_WRITEABLE:
-		// printf("[Test Protocol] The client is able to write, written %d bytes.\n", bufferSize);
+		printf("[Test Protocol] The client is able to write\n");
 		if (call_index != -1) {
 			if (this_call_info->bufferSize == 0)
 				break;
@@ -874,12 +957,6 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	return 0;
 }
 
-struct pjsua_player_eof_data
-{
-    pj_pool_t          *pool;
-    pjsua_player_id player_id;
-};
-
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args)
 {
     pj_status_t status;
@@ -898,8 +975,6 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
 
     return PJ_SUCCESS;
 }
-
-pjmedia_port *player_media_port;
 
 void *send_thread_func(void *vargp) {
 	// while(1) {
@@ -1098,12 +1173,11 @@ void * create_websocket(void *vargp) {
 	clientConnectInfo.protocol = protocols[PROTOCOL_TEST].name; // We use our test protocol
 	clientConnectInfo.pwsi = &this_call_info->wsiTest; // The created client should be fed inside the wsi_test variable
 
-	printf("<<**>> updated wsiTest on create_websocket %d\n", this_call_info->wsiTest);
-
 	// printf("Connecting to %s://%s:%d%s \n\n", urlProtocol, clientConnectInfo.address, clientConnectInfo.port, urlPath);
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
+	// printf("<<**>> updated wsiTest on create_websocket %d\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
 	{
 		printf("Error creating the client\n");
@@ -1322,67 +1396,6 @@ void call_deinit_tonegen(pjsua_call_id call_id)
   pjsua_call_set_user_data(call_id, NULL);
 }
 
-void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
-	call_play_digit(this_call_info->call_id, dial_number);
-}
-void on_speak_command(char *to_speak, pjsua_call_id call_id) {
-	printf("<<**>> on_speak_command started");
-	printf("Speak %s call_id: %d", to_speak, call_id);
-	
-	download_wav(to_speak);
-	char wavfile[200];
-    sprintf(wavfile, "%s.wav", to_speak);
-
-	pj_status_t status;
-
-	// Send starts
-	pjsua_call_info ci;
-	pjsua_call_get_info(call_id, &ci);
-
-	pj_pool_t *pool = NULL;
-	pjsua_player_id player_id = PJSUA_INVALID_ID;
-	pjsua_conf_port_id player_slot = PJSUA_INVALID_ID;
-	status = PJ_SUCCESS;
-
-	const pj_str_t filename = pj_str(wavfile);
-	// ( const pj_str_t *filename,
-	// 	 unsigned options,
-	// 	 pjsua_player_id *p_id)
-	status = pjsua_player_create(&filename, PJMEDIA_FILE_NO_LOOP, &player_id);
-	if (status != PJ_SUCCESS)
-		goto on_return;
-
-	pool = pjsua_pool_create("player%p", 512, 512);
-	struct pjsua_player_eof_data *eof_data = PJ_POOL_ZALLOC_T(pool, struct pjsua_player_eof_data);
-	eof_data->pool = pool;
-	eof_data->player_id = player_id;
-
-	status = pjsua_player_get_port(player_id, &player_media_port);
-	if (status != PJ_SUCCESS)
-		goto on_return;
-	pjmedia_wav_player_set_eof_cb(player_media_port, eof_data, &on_pjsua_wav_file_end_callback);
-
-	player_slot = pjsua_player_get_conf_port(player_id);
-	
-	pjsua_player_set_pos(player_id, 0);
-	
-	status = pjsua_conf_connect(player_slot, pjsua_call_get_conf_port(call_id));
-	if (status != PJ_SUCCESS)
-		goto on_return;
-
-	printf("<<**>> on_speak_command ended");
-	return;
-
-on_return:
-	if (player_slot != PJSUA_INVALID_ID)
-	pjsua_conf_disconnect(player_slot, ci.conf_slot);
-	if (player_id != PJSUA_INVALID_ID)
-	pjsua_player_destroy(player_id);
-	if (pool)
-	pj_pool_release(pool);
-	printf("<<**>> on_speak_command ended");
-}
 void store_response(char *response) {
 	printf("<<**>> store_response started");
 	struct call_info *this_call_info;
@@ -1476,7 +1489,7 @@ void *make_call_to_profile(void *vargp) {
     pjsua_msg_data msg_data_;
     pjsip_generic_string_hdr warn;
     pj_str_t hname = pj_str("Custom");
-    pj_str_t hvalue = pj_str("12028971289");
+    pj_str_t hvalue = pj_str("15704735934");
     pjsua_msg_data_init(&msg_data_);
     pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
     pj_list_push_back(&msg_data_.hdr_list, &warn);
