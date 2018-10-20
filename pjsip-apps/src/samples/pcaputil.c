@@ -348,7 +348,7 @@ static void pcap2wav(const pj_str_t *codec,
 					  ci->clock_rate, ci->channel_cnt,
 					  samples_per_frame,
 					  param.info.pcm_bits_per_sample, 0, 0,
-					  &app.wav, NULL) );
+					  &app.wav, NULL, 0) );
     } else {
 	err_exit("invalid output file", PJ_EINVAL);
     }

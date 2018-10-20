@@ -539,7 +539,7 @@ PJ_DEF(pj_status_t) pjsua_recorder_create( const pj_str_t *filename,
 					   pj_ssize_t max_size,
 					   unsigned options,
 					   pjsua_recorder_id *p_id,
-                       pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*))
+                       pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*), unsigned file_id)
 {
     UNIMPLEMENTED(pjsua_recorder_create)
     return PJ_ENOTSUP;

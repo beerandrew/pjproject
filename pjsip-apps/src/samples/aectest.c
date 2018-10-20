@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 					    PJMEDIA_PIA_CCNT(&wav_play->info),
 					    PJMEDIA_PIA_SPF(&wav_play->info),
 					    PJMEDIA_PIA_BITS(&wav_play->info),
-					    0, 0, &wav_out, NULL);
+					    0, 0, &wav_out, NULL, 0);
     if (status != PJ_SUCCESS) {
 	app_perror(THIS_FILE, "Error opening output WAV file", status);
 	return 1;

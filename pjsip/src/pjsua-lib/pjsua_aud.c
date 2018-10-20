@@ -1471,7 +1471,7 @@ PJ_DEF(pj_status_t) pjsua_recorder_create( const pj_str_t *filename,
 						pjsua_var.mconf_cfg.channel_count,
 						pjsua_var.mconf_cfg.samples_per_frame,
 						pjsua_var.mconf_cfg.bits_per_sample,
-						options, 0, &port, cb2);
+						options, 0, &port, cb2, file_id);
     } else {
 	PJ_UNUSED_ARG(enc_param);
 	port = NULL;

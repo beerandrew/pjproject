@@ -48,7 +48,8 @@ struct file_port
 
     pj_size_t	     cb_size;
     pj_status_t	   (*cb)(pjmedia_port*, void*);
-    pj_status_t	   (*cb2)(pjmedia_port*, pjmedia_frame*);
+    pj_status_t	   (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
+    unsigned    file_id;
 };
 
 static pj_status_t file_put_frame(pjmedia_port *this_port, 
@@ -71,7 +72,8 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_create( pj_pool_t *pool,
 						     unsigned flags,
 						     pj_ssize_t buff_size,
 						     pjmedia_port **p_port,
-                             callback2 cb2 )
+                             callback2 cb2,
+                             unsigned file_id )
 {
     struct file_port *fport;
     pjmedia_wave_hdr wave_hdr;
@@ -101,6 +103,7 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_create( pj_pool_t *pool,
     fport->base.put_frame = &file_put_frame;
     fport->base.on_destroy = &file_on_destroy;
     fport->cb2 = cb2;
+    fport->file_id = file_id;
 
     if (flags == PJMEDIA_FILE_WRITE_ALAW) {
 	fport->fmt_tag = PJMEDIA_WAVE_FMT_TAG_ALAW;
@@ -360,11 +363,11 @@ static pj_status_t file_put_frame(pjmedia_port *this_port,
 
 
     if (fport->cb2) {   
-        pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*);
+        pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
         pj_status_t status; 
         cb2 = fport->cb2;
 
-        status = (*cb2)(this_port, frame);
+        status = (*cb2)(this_port, frame, fport->file_id);
         // if (status != PJ_SUCCESS)
         //     return status;
         // }

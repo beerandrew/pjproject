@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 					      SAMPLES_PER_FRAME,
 					      BITS_PER_SAMPLE,
 					      0, 0, 
-					      &file_port, NULL);
+					      &file_port, NULL, 0);
     if (status != PJ_SUCCESS) {
 	app_perror(THIS_FILE, "Unable to open WAV file for writing", status);
 	return 1;

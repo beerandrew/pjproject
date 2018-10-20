@@ -591,7 +591,7 @@ int dummy_function()
 #endif
 
 #ifdef HAS_PJMEDIA_FILE_CAPTURE
-    pjmedia_wav_writer_port_create(NULL, NULL, 8000, 1, 80, 16, 0, 0, NULL, NULL);
+    pjmedia_wav_writer_port_create(NULL, NULL, 8000, 1, 80, 16, 0, 0, NULL, NULL, 0);
     pjmedia_wav_writer_port_get_pos(NULL);
     pjmedia_wav_writer_port_set_cb(NULL, 0, NULL, NULL);
 #endif

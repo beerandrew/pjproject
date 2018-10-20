@@ -697,7 +697,7 @@ int main(int argc, char *argv[])
 					        PJMEDIA_PIA_CCNT(&stream_port->info),
 					        PJMEDIA_PIA_SPF(&stream_port->info),
 					        PJMEDIA_PIA_BITS(&stream_port->info),
-						0, 0, &rec_file_port, NULL);
+						0, 0, &rec_file_port, NULL, 0);
 	if (status != PJ_SUCCESS) {
 	    app_perror(THIS_FILE, "Unable to use file", status);
 	    goto on_exit;

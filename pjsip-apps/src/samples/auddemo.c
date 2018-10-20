@@ -263,7 +263,7 @@ static void record(unsigned rec_index, const char *filename)
 			  1000, 1000, NULL);
 
     status = pjmedia_wav_writer_port_create(pool, filename, 16000, 
-					    1, 320, 16, 0, 0, &wav, NULL);
+					    1, 320, 16, 0, 0, &wav, NULL, 0);
     if (status != PJ_SUCCESS) {
 	app_perror("Error creating WAV file", status);
 	goto on_return;

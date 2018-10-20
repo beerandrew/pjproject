@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
     /* Create the WAV output */
     CHECK( pjmedia_wav_writer_port_create(pool, out_fname, clock_rate, 1,
 					  clock_rate * PTIME / 1000,
-					  16, 0, 0, &wavout, NULL) );
+					  16, 0, 0, &wavout, NULL, 0) );
 
     /* Create and register each WAV input to the bridge */
     for (i=0; i<input_cnt; ++i) {

@@ -134,7 +134,7 @@ static pj_status_t enc_dec_test(const char *codec_id,
 					  param.info.clock_rate, 
 					  param.info.channel_cnt,
 					  samples_per_frame,
-					  16, 0, 0, &wavout, NULL) );
+					  16, 0, 0, &wavout, NULL, 0) );
 
     /* Alloc codec */
     CHECK( pjmedia_codec_mgr_alloc_codec(cm, pci, &codec) );
