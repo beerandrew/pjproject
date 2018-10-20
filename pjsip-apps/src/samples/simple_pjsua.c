@@ -1844,7 +1844,7 @@ int main(int argc, char *argv[])
     }
 
 	status = pjsua_set_null_snd_dev();
-	if (status != PJ_SUCCESS)
+	if (status != PJ_SUCCESS) {
 	    return status;
     }
 
