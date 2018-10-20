@@ -706,7 +706,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	call_index = find_index_from_websocket(wsi);
 	if (call_index == -1) {
 		this_call_info = NULL;	
-		printf("<<**>> callback_test  (threadid: NULL, call_id: NULL, %X)\n", wsi);
+		printf("<<**>> callback_test  (threadid: NULL, call_id: NULL, %X, %d)\n", wsi, reason);
 	} else {
 		this_call_info = current_calls[call_index];	
 
