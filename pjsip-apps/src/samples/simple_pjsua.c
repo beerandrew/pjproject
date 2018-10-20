@@ -191,9 +191,11 @@ int find_index_from_media_port(pjmedia_port* media_port) {
 	for(i = 0; i < vector_size(current_calls); i ++) {
 		pjmedia_port *port;
 		printf("--111-----current_calls[i]->rec_id =--%d\n", current_calls[i]->rec_id);
-		pjsua_recorder_get_port(current_calls[i]->rec_id, &port);
-		if (port->info.signature == media_port->info.signature) {
-			return i;
+		if ( current_calls[i]->rec_id >= 0){
+			pjsua_recorder_get_port(current_calls[i]->rec_id, &port);
+			if (port->info.signature == media_port->info.signature) {
+				return i;
+			}
 		}
 	}
 	// printf("<<**>> find_index_from_media_port not found by media_port %d\n", media_port->info.signature);
