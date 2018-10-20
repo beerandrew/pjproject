@@ -1825,6 +1825,11 @@ int main(int argc, char *argv[])
     status = pjsua_start();
     if (status != PJ_SUCCESS) error_exit("Error starting pjsua", status);
 
+	status = pjsua_set_null_snd_dev();
+	if (status != PJ_SUCCESS) {
+	    return status;
+    }
+
     /* Register to SIP server by creating SIP account. */
     {
 		pjsua_acc_config cfg;
@@ -1841,11 +1846,6 @@ int main(int argc, char *argv[])
 
 		status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
 		if (status != PJ_SUCCESS) error_exit("Error adding account", status);
-    }
-
-	status = pjsua_set_null_snd_dev();
-	if (status != PJ_SUCCESS) {
-	    return status;
     }
 
 	char option[1000];
