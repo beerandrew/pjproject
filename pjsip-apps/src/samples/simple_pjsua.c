@@ -403,7 +403,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
 		}
 	} else {
-		printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
+		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
 	
 	return 0;
