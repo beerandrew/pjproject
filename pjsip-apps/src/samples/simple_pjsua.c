@@ -1843,6 +1843,11 @@ int main(int argc, char *argv[])
 		if (status != PJ_SUCCESS) error_exit("Error adding account", status);
     }
 
+	status = pjsua_set_null_snd_dev();
+	if (status != PJ_SUCCESS)
+	    return status;
+    }
+
 	char option[1000];
     /* Wait until user press "q" to quit. */
     for (;;) {
