@@ -165,7 +165,9 @@ static pj_pool_t* cpool_create_pool(pj_pool_factory *pf,
 	pool = pj_pool_create_int(&cp->factory, name, initial_size, 
 				  increment_sz, callback);
 	if (!pool) {
+        printf("------1-----before pj_lock_relaease --------------")
 	    pj_lock_release(cp->lock);
+        printf("------2-----before pj_lock_relaease --------------")
 	    return NULL;
 	}
 
@@ -195,8 +197,9 @@ static pj_pool_t* cpool_create_pool(pj_pool_factory *pf,
 
     /* Increment used count. */
     ++cp->used_count;
-
+    printf("------3-----before pj_lock_relaease --------------")
     pj_lock_release(cp->lock);
+    printf("------4-----after pj_lock_relaease --------------")
     return pool;
 }
 
