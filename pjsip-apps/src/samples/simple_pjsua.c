@@ -186,6 +186,17 @@ int find_index_from_call_id(pjsua_call_id call_id) {
 	// printf("<<**>> find_index_from_call_id not found by call_id %d\n", call_id);
 	return -1;
 }
+int find_index_from_rec_id(unsigned rec_id) {
+	int i;
+	for(i = 0; i < vector_size(current_calls); i ++) {
+		if (current_calls[i]->rec_id == rec_id) {
+			return i;
+		}
+	}
+	// printf("<<**>> find_index_from_call_id not found by call_id %d\n", call_id);
+	return -1;
+}
+
 int find_index_from_media_port(pjmedia_port* media_port) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
@@ -355,13 +366,13 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	}
 	printf("<<**>> on_call_state ended");
 }
-pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame) {
+pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
 	// // printf("<<**>> on_putframe started\n");
 
 	struct call_info *this_call_info;
 	int call_index;
 	pthread_mutex_lock(&call_info_mutex);
-	call_index = find_index_from_media_port(port);
+	call_index = find_index_from_rec_id(rec_id);
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
