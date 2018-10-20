@@ -443,10 +443,20 @@ void *recorder_thread_func(void *param) {
 	// pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
 
 	if (status != PJ_SUCCESS)
-	goto on_return;
+	{
+//for debug jjh	
+		printf("-------status =! PJ_SUCCESS-----%d\n", this_call_id);
+///////////
+		goto on_return;
+
+	}
+	
 
 	rec_slot = pjsua_recorder_get_conf_port(rec_id);
 	this_call_info->rec_id = rec_id;
+//for debug jjh	
+	printf("-------status = PJ_SUCCESS---rec_id--%d\n", rec_id);
+////////
 	this_call_info->rec_slot = rec_slot;
 
 	printf("<<**>>set rec_slot callinfo = %x rec_slot = %d\n", this_call_info, rec_slot);
