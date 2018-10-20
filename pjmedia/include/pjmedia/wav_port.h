@@ -239,7 +239,7 @@ PJ_DECL(pj_status_t) pjmedia_wav_writer_port_create(pj_pool_t *pool,
 						    unsigned flags,
 						    pj_ssize_t buff_size,
 						    pjmedia_port **p_port, 
-                            pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*) );
+                            pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*), unsigned file_id );
 
 
 /**
