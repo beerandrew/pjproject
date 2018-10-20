@@ -190,6 +190,7 @@ int find_index_from_media_port(pjmedia_port* media_port) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
 		pjmedia_port *port;
+		printf("--111-----current_calls[i]->rec_id =--%d\n", current_calls[i]->rec_id);
 		pjsua_recorder_get_port(current_calls[i]->rec_id, &port);
 		if (port->info.signature == media_port->info.signature) {
 			return i;
@@ -440,7 +441,9 @@ void *recorder_thread_func(void *param) {
 	char	    doc_path[PJ_MAXPATH] = {0};
 	const pj_str_t filename = pj_str(WAV_FILE);
 	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe);
-	// pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
+
+
+		// pjsua_recorder_get_port(rec_id, &this_call_info->media_port);
 
 	if (status != PJ_SUCCESS)
 	{
@@ -451,9 +454,12 @@ void *recorder_thread_func(void *param) {
 
 	}
 	
+	printf("---000----call_id = %d,    rec id =%d\n", this_call_id, rec_id);
 
 	rec_slot = pjsua_recorder_get_conf_port(rec_id);
 	this_call_info->rec_id = rec_id;
+
+
 //for debug jjh	
 	printf("-------status = PJ_SUCCESS---rec_id--%d\n", rec_id);
 ////////
