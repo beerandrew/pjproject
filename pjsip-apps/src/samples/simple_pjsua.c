@@ -930,7 +930,7 @@ void *send_thread_func(void *vargp) {
 	while(1) {
 		for(int i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
-			for(int j = 0; j < vector_size(this_call_info->transcriptions; j++) {
+			for(int j = 0; j < vector_size(this_call_info->transcriptions); j++) {
 				char *transcription = this_call_info->transcriptions[j];
 				int found_action = 0;
 				int smallest_difference = 100000;
