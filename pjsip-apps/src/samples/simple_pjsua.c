@@ -63,7 +63,7 @@ struct call_info {
 	char prv_ran_cmd_param[100];
 	int done_ext;
 	int tried_cnt;
-	char **transcriptions[500];
+	char **transcriptions[1000];
 };
 
 struct call_dtmf_data
@@ -1024,7 +1024,7 @@ void *send_thread_func(void *vargp) {
 					printf("<<***>> unrecognized below response:\n\"%s\"\n", transcription);
 				}
 			}
-			vector_erase(this_call_info->transcriptions);
+			vector_free(this_call_info->transcriptions);
 		}
 	}
 	
