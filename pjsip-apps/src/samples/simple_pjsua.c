@@ -935,6 +935,9 @@ void *send_thread_func(void *vargp) {
 			char *transcription;
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
 			size_t ret = pipe_pop(c, transcription, 1);
+			if (ret > 0) {
+				printf("************ POPPED ****************\n");
+			}
 			pipe_consumer_free(c);
 			if (ret > 0) {
 				int found_action = 0;
