@@ -928,8 +928,9 @@ void *send_thread_func(void *vargp) {
 		}
 	}
 
+	int i;
 	while(1) {
-		for(int i = 0; i < vector_size(current_calls); i ++) {
+		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			char *transcription;
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
