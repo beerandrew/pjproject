@@ -67,6 +67,7 @@ struct call_info {
 	int done_ext;
 	int tried_cnt;
 	pipe_t* transcriptions;
+	char callerId[20];
 };
 
 struct call_dtmf_data
@@ -326,6 +327,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 				thread_param->pi = pi;
 				thread_param->number = this_call_info->ci;
 				thread_param->tried_cnt = this_call_info->tried_cnt + 1;
+				strcpy(thread_param->callerId, this_call_info->callerId);
 
 				printf(">>> redo call since did not get result %d\n", this_call_info->ci);
 				pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
@@ -1456,6 +1458,8 @@ void *make_call_to_profile(void *vargp) {
 	
 	struct call_info *newCall = malloc( sizeof(struct call_info) );
 	init_call_info(newCall);
+
+	strcpy(newCall->callerId, thread_param.callerId)
 
 	pthread_mutex_lock(&call_info_mutex);
 
