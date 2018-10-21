@@ -943,7 +943,6 @@ void *send_thread_func(void *vargp) {
 			if (ret > 0) {
 				printf("************ POPPED ****************\n");
 			}
-			pipe_consumer_free(c);
 			printf("***C\n");
 			if (ret > 0) {
 				int found_action = 0;
