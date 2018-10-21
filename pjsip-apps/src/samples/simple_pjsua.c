@@ -934,7 +934,7 @@ void *send_thread_func(void *vargp) {
 		printf("***CALLS %d\n", vector_size(current_calls));
 		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
-			print("%x %x %x %x\n", this_call_info->transcriptions->buffer, this_call_info->transcriptions->bufend, this_call_info->transcriptions->begin, this_call_info->transcriptions->end);
+			printf("%x %x %x %x\n", this_call_info->transcriptions->buffer, this_call_info->transcriptions->bufend, this_call_info->transcriptions->begin, this_call_info->transcriptions->end);
 			char *transcription;
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
 			printf("***A\n");
