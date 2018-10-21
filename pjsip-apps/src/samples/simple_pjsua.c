@@ -37,6 +37,7 @@ int didDestroy = 0;
 
 struct profile_info {
 	char phone[20];
+	char phonenumbers[255];
 	char name[200];
 	int number_commands;
 	char user_input_list[100][1000];
@@ -1519,12 +1520,12 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 
 	if (strcmp(args[0], "Profile") == 0) {
 		if (strcmp(args[1], "-C") == 0) {
-			if (argv != 4) {
+			if (argv != 5) {
 				puts("Wrong format");
 				return;
 			}
 			FILE *fp = fopen (args[2], "w+");
-   			fprintf(fp, "%s\n", args[3]);
+   			fprintf(fp, "%s %s\n", args[3], args[4]);
 			fclose(fp);
 			puts("Profile created");
 		} else if (strcmp(args[1], "-I") == 0) {
@@ -1603,8 +1604,17 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			printf("Run profile -> new line -> %s\n", new_line);
 			if (n_profile_lines == 0) {
 				new_line[strcspn(new_line, "\n")] = 0;
-				strcpy(pi->phone, new_line);
-				printf("analyze profile, phone = %s\n", pi->phone);
+				char *spacel = strpbrk(new_line, " ");
+				if (spacel != NULL) {
+					strcpy(pi->phonenumbers, spacel + 1);
+					spacel = '\0';
+					strcpy(pi->phone, new_line);
+					printf("analyze profile, phone = %s, phonenumbers = %s\n", pi->phone, pi->phonenumbers);
+				} else {
+					fclose(fp);
+					printf("Wrong profile format\n");
+					return;
+				}
 			} else if (n_profile_lines % 3 == 1) {
 				strcpy(pi->user_input_list[pi->number_commands], new_line);
 			} else if (n_profile_lines %3 == 2) {
