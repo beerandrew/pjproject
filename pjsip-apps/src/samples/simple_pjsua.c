@@ -293,6 +293,8 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 			return;
 		}
 
+		call_deinit_tonegen(call_id);
+
 		printf("<<**>> disconnect call (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 
 		printf("<<**>>disconnect rec_slot callinfo = %x rec_slot = %d\n", this_call_info, this_call_info->rec_slot);
@@ -376,23 +378,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 		vector_erase(current_calls, call_index);
 
 		pthread_mutex_unlock(&call_info_mutex);
-	} else if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
-      call_deinit_tonegen(call_id);
-		struct call_info *this_call_info;
-		int call_index;
-		pthread_mutex_lock(&call_info_mutex);
-		call_index = find_index_from_call_id(call_id);
-		if (call_index != -1) {
-			this_call_info = current_calls[call_index];
-		}
-		pthread_mutex_unlock(&call_info_mutex);
-
-		if (call_index == -1) {
-			printf("call_index == 0 and returning\n");
-			return;
-		}
-		this_call_info->sending = 0;
-   }
+	}
 	printf("<<**>> on_call_state ended");
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
@@ -413,6 +399,16 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> on_putframe call_index != -1\n");
 		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 		// don't send while sending
+
+		struct call_dtmf_data* cd = (struct call_dtmf_data*) pjsua_call_get_user_data(this_call_info->call_id);
+		// if has dtmf 
+		if (cd) {
+			if (!pjmedia_tonegen_is_busy(cd->tonegen)) {
+				call_deinit_tonegen(this_call_info->call_id);
+				this_call_info->sending = 0;
+			}
+		}
+		
 		if (this_call_info->sending) {
 			return 0;
 		}
