@@ -732,6 +732,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 		// printf("<<**>> callback_test  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 	}
+	int call_id = this_call_info->call_id;
 
 	pthread_mutex_unlock(&call_info_mutex);
 
@@ -751,7 +752,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	switch (reason)
 	{
 	case LWS_CALLBACK_CLOSED:
-		printf("[Test Protocol %d] Connection closed.\n", this_call_info->call_id);
+		printf("[Test Protocol %d] Connection closed.\n", call_id);
 		break;
 
 		// Our client received something
@@ -759,7 +760,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLIENT_RECEIVE:
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
-			printf("[Test Protocol %d] Received data: \"%s\"\n", this_call_info->call_id, (char*)in);
+			printf("[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in);
 			// Parse JSON
 			json_char* json;
         	json_value* value;
@@ -816,7 +817,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 					if (call_index != -1) {
 						
 						// printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
-						printf("<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, this_call_info->call_id, transcription);
+						printf("<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, call_id, transcription);
 
 						if (this_call_info->isProfileI && this_call_info->transcription[0] != '\0') {
 							int ci = user_input_cnt; // current response index
@@ -849,9 +850,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 	// The connection was successfully established
 	case LWS_CALLBACK_CLIENT_ESTABLISHED:
-		printf("[Test Protocol %d] Connection to server established.\n", this_call_info->call_id);
+		printf("[Test Protocol %d] Connection to server established.\n", call_id);
 
-		printf("[Test Protocol %d] Writing \"%s\" to server.\n", this_call_info->call_id, msg);
+		printf("[Test Protocol %d] Writing \"%s\" to server.\n", call_id, msg);
 
 		lws_write(wsi, &buf[LWS_PRE], strlen(msg), LWS_WRITE_TEXT);
 
@@ -883,7 +884,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 		// There was an error connecting to the server
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-		printf("[Test Protocol %d] There was a connection error: %s\n", this_call_info->call_id, in ? (char*)in : "(no error information)");
+		printf("[Test Protocol %d] There was a connection error: %s\n", call_id, in ? (char*)in : "(no error information)");
 		break;
 	default:
 		break;
