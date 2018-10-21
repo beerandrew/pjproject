@@ -48,7 +48,6 @@ struct profile_info {
 };
 
 char binary_buf[1000000];
-char inputURL[5000];
 struct call_info {
 	int isProfileI;
 	int disconnected;
@@ -1065,7 +1064,40 @@ void * create_websocket(void *vargp) {
 
 	// signal(SIGINT, onSigInt);
 	// Connection info
+	CURL *hnd = curl_easy_init();
+
+	struct MemoryStruct chunk;
+ 
+	chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
+	chunk.size = 0;    /* no data at this point */ 
+
+	curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "GET");
+	curl_easy_setopt(hnd, CURLOPT_URL, "https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api");
+
+	/* allow whatever auth the server speaks */
+	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+	curl_easy_setopt(hnd, CURLOPT_USERPWD, "2f90c29a-4b2d-4e7c-902d-3841b604fb44:dwYf8rffWuyK");
+
+	/* send all data to this function  */ 
+	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 	
+	/* we pass our 'chunk' struct to the callback function */ 
+	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&chunk);
+	CURLcode res = curl_easy_perform(hnd);
+
+	if(res != CURLE_OK) {
+      	fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+		return NULL;
+	}
+
+	curl_easy_cleanup(hnd);
+ 
+
+	char inputURL[5000];
+	sprintf(inputURL, "wss://stream.watsonplatform.net/speech-to-text/api/v1/recognize?watson-token=%s", chunk.memory);
+
+	free(chunk.memory);
 	// strcpy(inputURL, "wss://echo.websocket.org");
 
 	struct lws_context_creation_info ctxCreationInfo; // Context creation info
@@ -1732,39 +1764,6 @@ int main(int argc, char *argv[])
 
 	// download_wav("Other Options");
 	// return 0;
-
-CURL *hnd = curl_easy_init();
-
-	struct MemoryStruct chunk;
- 
-	chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
-	chunk.size = 0;    /* no data at this point */ 
-
-	curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "GET");
-	curl_easy_setopt(hnd, CURLOPT_URL, "https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api");
-
-	/* allow whatever auth the server speaks */
-	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-	curl_easy_setopt(hnd, CURLOPT_USERPWD, "2f90c29a-4b2d-4e7c-902d-3841b604fb44:dwYf8rffWuyK");
-
-	/* send all data to this function  */ 
-	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-	
-	/* we pass our 'chunk' struct to the callback function */ 
-	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&chunk);
-	CURLcode res = curl_easy_perform(hnd);
-
-	if(res != CURLE_OK) {
-      	fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-		return NULL;
-	}
-
-	curl_easy_cleanup(hnd);
- 
-	sprintf(inputURL, "wss://stream.watsonplatform.net/speech-to-text/api/v1/recognize?watson-token=%s", chunk.memory);
-
-	free(chunk.memory);
 
 	setvbuf (stdout, NULL, _IONBF, 0);
     pjsua_acc_id acc_id;
