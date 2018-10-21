@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include "lib/vector.h"
 #include "lib/pipe.h"
+#include "lib/pipe.c"
 #include <curl/curl.h>
 
 #define THIS_FILE	"APP"
