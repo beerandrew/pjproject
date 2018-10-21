@@ -1394,7 +1394,7 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
     d[i].off_msec = 200;
     d[i].volume = 0;
   }
-	printf("--------sending dtmf\n-")
+	printf("--------sending dtmf\n-");
   pjmedia_tonegen_play_digits(cd->tonegen, count, d, 0);
 }
 
