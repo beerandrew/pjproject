@@ -838,6 +838,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
 							pipe_push(p, transcription, 1);
 							pipe_producer_free(p);
+							printf("************PUSHED TO PIPE %s *******", transcription);
 						}
 					}
 					// if (strstr(transcription, "other options") != NULL) {
@@ -928,14 +929,14 @@ void *send_thread_func(void *vargp) {
 	}
 
 	while(1) {
+		sleep(500);
 		for(int i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
-			char buf[1][1000];
+			char *transcription;
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
-			size_t ret = pipe_pop(c, buf, 1);
+			size_t ret = pipe_pop(c, transcription, 1);
 			pipe_consumer_free(c);
 			if (ret > 0) {
-				char *transcription = buf[0];
 				int found_action = 0;
 				int smallest_difference = 100000;
 				char similarest[1000];
