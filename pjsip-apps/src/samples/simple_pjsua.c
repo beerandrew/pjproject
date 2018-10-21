@@ -10,6 +10,7 @@
 #include <libwebsockets.h>
 #include <pthread.h>
 #include "lib/vector.h"
+#include "lib/pipe.h"
 #include <curl/curl.h>
 
 #define THIS_FILE	"APP"
@@ -63,7 +64,7 @@ struct call_info {
 	char prv_ran_cmd_param[100];
 	int done_ext;
 	int tried_cnt;
-	char **transcriptions[1000];
+	pipe_t* transcriptions;
 };
 
 struct call_dtmf_data
@@ -248,6 +249,7 @@ void init_call_info(struct call_info *ci) {
 	ci->rec_slot = PJSUA_INVALID_ID;
 	ci->transcription[0] = '\0';
 	ci->done_ext = 0;
+	ci->transcriptions = pipe_new(sizeof(char) * 1000, 0);
 }
 
 void on_call_end() {
@@ -837,7 +839,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 						strcpy(this_call_info->transcription, transcription);
 
 						if(this_call_info->pi) {
-							vector_push_back(this_call_info->transcriptions, transcription);
+							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
+							pipe_push(p, transcription, 1);
+							pipe_producer_free(p);
 						}
 					}
 					// if (strstr(transcription, "other options") != NULL) {
@@ -930,8 +934,10 @@ void *send_thread_func(void *vargp) {
 	while(1) {
 		for(int i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
-			for(int j = 0; j < vector_size(this_call_info->transcriptions); j++) {
-				char *transcription = this_call_info->transcriptions[j];
+			char buf[1][1000];
+			size_t ret = pipe_pop(this_call_info->transcriptions, buf, 1);
+			if (ret > 0) {
+				char *transcription = buf[0];
 				int found_action = 0;
 				int smallest_difference = 100000;
 				char similarest[1000];
@@ -1024,7 +1030,6 @@ void *send_thread_func(void *vargp) {
 					printf("<<***>> unrecognized below response:\n\"%s\"\n", transcription);
 				}
 			}
-			vector_free(this_call_info->transcriptions);
 		}
 	}
 	
