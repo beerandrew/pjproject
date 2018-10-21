@@ -640,11 +640,6 @@ static void process_value(json_value* value, int depth)
 	}
 } 
 char **send_queue = NULL;
-int min(int a, int b) {
-	if (a > b)
-		return b;
-	return a;
-}
 
 // https://stackoverflow.com/questions/907997/physical-distance-between-two-places/908157#908157
 int getDifference(char *a, char *b)
