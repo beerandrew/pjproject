@@ -935,13 +935,13 @@ void *send_thread_func(void *vargp) {
 				int k;
 				for (k = 0; k < pi->number_commands; k ++) {
 					int limit = strlen(pi->user_input_list[k])/7 + 7;
-					printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
+					// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
 					int difference = getDifference(pi->user_input_list[k], transcription);
-					printf("<<**>> difference %d %d\n", difference, limit);
+					// printf("<<**>> difference %d %d\n", difference, limit);
 
 					if(difference < limit) {
-						printf("going to show 0x%x <<------>> 0x%x <<>--------> 0x%x\n", this_call_info, pi, transcription );
-						printf("%d) found similar setences, \"%s\" and \"%s\"\n", this_call_info->ci, pi->user_input_list[k], transcription);
+						// printf("going to show 0x%x <<------>> 0x%x <<>--------> 0x%x\n", this_call_info, pi, transcription );
+						// printf("%d) found similar setences, \"%s\" and \"%s\"\n", this_call_info->ci, pi->user_input_list[k], transcription);
 
 						printf("going to do \"%s\" command \n", pi->cmd[k][0]);
 						if (strcmp(pi->cmd[k][0], "Skip") == 0){
@@ -1324,7 +1324,7 @@ struct call_dtmf_data *call_init_tonegen(pjsua_call_id call_id)
   struct call_dtmf_data *cd;
   pjsua_call_info ci;
 
-  pool = pjsua_pool_create("mycall", 500, 500);
+  pool = pjsua_pool_create("call%p", 500, 500);
   
   cd = PJ_POOL_ZALLOC_T(pool, struct call_dtmf_data);
   cd->pool = pool;
