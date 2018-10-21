@@ -80,6 +80,7 @@ struct call_to_profile_with_number {
 	struct profile_info *pi;
 	int number;
 	int tried_cnt;
+	char callerId[20];
 };
 
 struct pjsua_player_eof_data
@@ -1476,7 +1477,10 @@ void *make_call_to_profile(void *vargp) {
     pjsua_msg_data msg_data_;
     pjsip_generic_string_hdr warn;
     pj_str_t hname = pj_str("Custom");
-    pj_str_t hvalue = pj_str("15704735934");
+    pj_str_t hvalue = pj_str(thread_param->callerId);
+	printf("----------------");
+	printf("CALLERID: %s", thread_param->callerId);
+	printf("----------------");
     pjsua_msg_data_init(&msg_data_);
     pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
     pj_list_push_back(&msg_data_.hdr_list, &warn);
@@ -1668,17 +1672,29 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 		pi->thread_cnt = cnt;
 		pi->finished_thread_cnt = 0;
 		shared_acc_id = acc_id;
+
+		// Read phone numbers
+		fp = fopen (pi->phonenumbers, "r");
+		if(fp == NULL) {
+			fclose(fp);
+			printf("Phone numbers list doesn't exist\n");
+			return;
+		}
 		int j = 0;
 		for (j = 0; j < cnt; j ++) {
+			if (fgets(new_line, 20, fp) == NULL)
+				strcpy(new_line, "18008008000");
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
 			pthread_t make_profile_call_thread_id;
 			thread_param->pi = pi;
 			thread_param->number = j;
 			thread_param->tried_cnt = 0;
+			strcpy(thread_param->callerId, new_line);
 
 			printf(">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt);
 			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
 		}
+		fclose(fp);
 	} else if(current_profile_name) {
 
 		struct call_info *this_call_info;
