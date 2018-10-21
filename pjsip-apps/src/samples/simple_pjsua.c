@@ -29,9 +29,11 @@ char* str_copy(char *str) {
 	return copied;
 }
 
+pthread_mutex_t ws_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t call_info_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t write_ext_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static int bExit;
 int didDestroy = 0;
 
@@ -1081,6 +1083,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void * create_websocket(void *vargp) {
+	pthread_mutex_lock(&ws_mutex);
 	printf("<<**>> create_websocket started");
 	struct call_info *this_call_info = (struct call_info *)vargp;
 	printf("<<**>> create_websocket (threadid:%d, call_id:%d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
@@ -1109,6 +1112,7 @@ void * create_websocket(void *vargp) {
 	CURLcode res = curl_easy_perform(hnd);
 
 	if(res != CURLE_OK) {
+		pthread_mutex_unlock(&ws_mutex);
       	fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
 		return NULL;
@@ -1167,6 +1171,7 @@ void * create_websocket(void *vargp) {
 	
 	if (ctx == NULL)
 	{
+		pthread_mutex_unlock(&ws_mutex);
 		printf("Error creating context\n");
 		return NULL;
 	}
@@ -1190,6 +1195,7 @@ void * create_websocket(void *vargp) {
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
+	pthread_mutex_unlock(&ws_mutex);
 	printf("<<**>> updated wsiTest on create_websocket %X\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
 	{
@@ -1722,7 +1728,6 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 
 			printf(">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt);
 			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
-			sleep(2);
 		}
 		fclose(fp);
 	} else if(current_profile_name) {
