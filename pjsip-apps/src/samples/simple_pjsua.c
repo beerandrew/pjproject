@@ -457,7 +457,9 @@ void *recorder_thread_func(void *param) {
 	PJ_LOG(3,(THIS_FILE, "Running %s\n", title));
 
 	char	    doc_path[PJ_MAXPATH] = {0};
-	const pj_str_t filename = pj_str(WAV_FILE);
+	char filename[20];
+	sprintf(filename, "%d.wav", call_index);
+	const pj_str_t filename = pj_str(filename);
 	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe);
 
 
