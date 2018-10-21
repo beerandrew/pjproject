@@ -732,7 +732,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 		// printf("<<**>> callback_test  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 	}
-	int call_id = this_call_info->call_id;
+	int call_id = this_call_info != NULL ? this_call_info->call_id : -1;
 
 	pthread_mutex_unlock(&call_info_mutex);
 
