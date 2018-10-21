@@ -935,7 +935,9 @@ void *send_thread_func(void *vargp) {
 		for(int i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			char buf[1][1000];
-			size_t ret = pipe_pop(this_call_info->transcriptions, buf, 1);
+			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
+			size_t ret = pipe_pop(c, buf, 1);
+			pipe_consumer_free(c);
 			if (ret > 0) {
 				char *transcription = buf[0];
 				int found_action = 0;
