@@ -459,7 +459,7 @@ void *recorder_thread_func(void *param) {
 
 	char	    doc_path[PJ_MAXPATH] = {0};
 	char wavname[20];
-	sprintf(wavname, "%d.wav", call_index);
+	sprintf(wavname, "%d.wav", this_call_info->call_id);
 	const pj_str_t filename = pj_str(wavname);
 	status = pjsua_recorder_create(&filename, 0, NULL, -1, 0, &rec_id, on_putframe);
 
@@ -734,6 +734,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	}
 
 	pthread_mutex_unlock(&call_info_mutex);
+
 	// The message we send back to the echo server
 	const char msg[128] = "{\"action\": \"start\", \"content-type\": \"audio/l16;rate=16000\", \"interim_results\": true}";
 
@@ -1002,7 +1003,7 @@ void *send_thread_func(void *vargp) {
 				FILE *fp = fopen (pi->cmd[lci+1][1], "a"); 
 				printf("<start>--------------<start>\n");
 				printf("<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
-				fprintf(fp, "<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
+				fprintf(fp, "<start ci=%d cmd=%s param=%s call=%d>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp, this_call_info->call_id);
 				fprintf(fp, "%s\n", transcription);
 				fprintf(fp, "<end>--------------<end>\n");
 				fclose(fp);
