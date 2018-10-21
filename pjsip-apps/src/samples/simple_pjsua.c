@@ -930,6 +930,7 @@ void *send_thread_func(void *vargp) {
 
 	int i;
 	while(1) {
+		sleep(1);
 		printf("***CALLS %d\n", vector_size(current_calls));
 		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
