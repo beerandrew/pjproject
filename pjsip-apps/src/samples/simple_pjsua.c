@@ -65,7 +65,8 @@ struct call_info {
 	char prv_ran_cmd_param[100];
 	int done_ext;
 	int tried_cnt;
-	pipe_t* transcriptions;
+	pipe_producer_t* producer;
+	pipe_consumer_t* consumer;
 };
 
 struct call_dtmf_data
@@ -250,7 +251,10 @@ void init_call_info(struct call_info *ci) {
 	ci->rec_slot = PJSUA_INVALID_ID;
 	ci->transcription[0] = '\0';
 	ci->done_ext = 0;
-	ci->transcriptions = pipe_new(sizeof(char) * 1000, 10);
+	pipe_t* p = pipe_new(sizeof(char) * 1000, 0);
+	ci->consumer = pipe_consumer_new(p);
+	ci->producer = pipe_producer_new(p);
+	pipe_free(p);
 }
 
 void on_call_end() {
@@ -835,9 +839,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 						strcpy(this_call_info->transcription, transcription);
 
 						if(this_call_info->pi) {
-							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
-							pipe_push(p, transcription, 1);
-							pipe_producer_free(p);
+							pipe_push(this_call_info->producer, transcription, 1);
 							printf("************PUSHED TO PIPE %s *******", transcription);
 						}
 					}
@@ -935,9 +937,8 @@ void *send_thread_func(void *vargp) {
 		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			char *transcription;
-			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
 			printf("***A\n");
-			size_t ret = pipe_pop(c, transcription, 1);
+			size_t ret = pipe_pop(this_call_info->consumer, transcription, 1);
 			printf("***B\n");
 			if (ret > 0) {
 				printf("************ POPPED ****************\n");
