@@ -934,11 +934,14 @@ void *send_thread_func(void *vargp) {
 			struct call_info *this_call_info = current_calls[i];
 			char *transcription;
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
+			printf("***A\n");
 			size_t ret = pipe_pop(c, transcription, 1);
+			printf("***B\n");
 			if (ret > 0) {
 				printf("************ POPPED ****************\n");
 			}
 			pipe_consumer_free(c);
+			printf("***C\n");
 			if (ret > 0) {
 				int found_action = 0;
 				int smallest_difference = 100000;
