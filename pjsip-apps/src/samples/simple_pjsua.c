@@ -813,7 +813,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 				if (is_final) {
 					if (call_index != -1) {
 						
-						printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
+						// printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
 						printf("<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, this_call_info->call_id, transcription);
 
 						if (this_call_info->isProfileI && this_call_info->transcription[0] != '\0') {
@@ -829,6 +829,8 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
 							pipe_push(p, transcription, 1);
 							pipe_producer_free(p);
+							pthread_t send_thread_id;
+							pthread_create(&send_thread_id, NULL, send_thread_func, this_call_info);
 						}
 					}
 					// if (strstr(transcription, "other options") != NULL) {
@@ -909,6 +911,8 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
 }
 
 void *send_thread_func(void *vargp) {
+	struct call_info *this_call_info = (struct call_info *)vargp;
+
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
 	if (!pj_thread_is_registered()) {
@@ -918,109 +922,103 @@ void *send_thread_func(void *vargp) {
 		}
 	}
 
-	int i;
-	while(1) {
-		for(i = 0; i < vector_size(current_calls); i ++) {
-			struct call_info *this_call_info = current_calls[i];
-			if (this_call_info->transcriptions->begin + this_call_info->transcriptions->elem_size == this_call_info->transcriptions->end)
-				continue;
-			char transcription[1000];
-			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
-			size_t ret = pipe_pop(c, transcription, 1);
-			pipe_consumer_free(c);
-			if (ret > 0) {
-				int found_action = 0;
-				int smallest_difference = 100000;
-				char similarest[1000];
-				struct profile_info *pi = this_call_info->pi;
-				int k;
-				for (k = 0; k < pi->number_commands; k ++) {
-					int limit = strlen(pi->user_input_list[k])/7 + 7;
-					// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
-					int difference = getDifference(pi->user_input_list[k], transcription);
-					// printf("<<**>> difference %d %d\n", difference, limit);
+	if (this_call_info->transcriptions->begin + this_call_info->transcriptions->elem_size == this_call_info->transcriptions->end)
+		return NULL;
+	char transcription[1000];
+	pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
+	size_t ret = pipe_pop(c, transcription, 1);
+	pipe_consumer_free(c);
+	if (ret > 0) {
+		int found_action = 0;
+		int smallest_difference = 100000;
+		char similarest[1000];
+		struct profile_info *pi = this_call_info->pi;
+		int k;
+		for (k = 0; k < pi->number_commands; k ++) {
+			int limit = strlen(pi->user_input_list[k])/7 + 7;
+			// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
+			int difference = getDifference(pi->user_input_list[k], transcription);
+			// printf("<<**>> difference %d %d\n", difference, limit);
 
-					if(difference < limit) {
-						// printf("going to show 0x%x <<------>> 0x%x <<>--------> 0x%x\n", this_call_info, pi, transcription );
-						// printf("%d) found similar setences, \"%s\" and \"%s\"\n", this_call_info->ci, pi->user_input_list[k], transcription);
+			if(difference < limit) {
+				// printf("going to show 0x%x <<------>> 0x%x <<>--------> 0x%x\n", this_call_info, pi, transcription );
+				// printf("%d) found similar setences, \"%s\" and \"%s\"\n", this_call_info->ci, pi->user_input_list[k], transcription);
 
-						printf("going to do \"%s\" command \n", pi->cmd[k][0]);
-						if (strcmp(pi->cmd[k][0], "Skip") == 0){
-						} else if (strcmp(pi->cmd[k][0], "Dial") == 0) {
-							if (strcmp(pi->cmd[k][1], "-L") == 0) {// Dial -L -T /files/zipcodelist.txt
-								FILE *fp = fopen (pi->cmd[k][3], "r");
-								char new_line[100];
-								char to_dial_number[100];
-								int index = 0;
-								if(fp == NULL) {
-									printf("Cannot read number list, it doesn't exist! --> filename = %s\n", pi->cmd[k][3]);
-								} else {
-									printf("calculating size of number list\n");
-									while (1) {
-										if (fgets(new_line,150, fp) == NULL) break;
-										if(index == this_call_info->ci) {
-											strcpy(to_dial_number, new_line);
-											to_dial_number[strcspn(to_dial_number, "\n")] = 0;
-										}
-										index++;
-									}
-									fclose(fp);
+				printf("going to do \"%s\" command \n", pi->cmd[k][0]);
+				if (strcmp(pi->cmd[k][0], "Skip") == 0){
+				} else if (strcmp(pi->cmd[k][0], "Dial") == 0) {
+					if (strcmp(pi->cmd[k][1], "-L") == 0) {// Dial -L -T /files/zipcodelist.txt
+						FILE *fp = fopen (pi->cmd[k][3], "r");
+						char new_line[100];
+						char to_dial_number[100];
+						int index = 0;
+						if(fp == NULL) {
+							printf("Cannot read number list, it doesn't exist! --> filename = %s\n", pi->cmd[k][3]);
+						} else {
+							printf("calculating size of number list\n");
+							while (1) {
+								if (fgets(new_line,150, fp) == NULL) break;
+								if(index == this_call_info->ci) {
+									strcpy(to_dial_number, new_line);
+									to_dial_number[strcspn(to_dial_number, "\n")] = 0;
 								}
-								on_dial_command(this_call_info, to_dial_number);
-								this_call_info->prv_ran_cmd_id = k;
-								strcpy(this_call_info->prv_ran_cmd_param, to_dial_number);
-							} else { // Dial 12345
-								on_dial_command(this_call_info, pi->cmd[k][1]);
-								this_call_info->prv_ran_cmd_id = k;
-								strcpy(this_call_info->prv_ran_cmd_param, pi->cmd[k][1]);
-							}	
-						} else if (strcmp(pi->cmd[k][0], "Speak") == 0) {//"billing"
-							on_speak_command(pi->cmd[k][1], this_call_info->call_id);
-							this_call_info->prv_ran_cmd_id = k;
-							strcpy(this_call_info->prv_ran_cmd_param, pi->cmd[k][1]);
-						} else if (strcmp(pi->cmd[k][0], "EXT") == 0) {//EXT /files/responses.txt
+								index++;
+							}
+							fclose(fp);
 						}
-						found_action = 1;
-						break;
-					} else {
-						if (smallest_difference > difference) {
-							smallest_difference = difference;
-							strcpy(similarest, pi->user_input_list[k]);
-						}
-					}
+						on_dial_command(this_call_info, to_dial_number);
+						this_call_info->prv_ran_cmd_id = k;
+						strcpy(this_call_info->prv_ran_cmd_param, to_dial_number);
+					} else { // Dial 12345
+						on_dial_command(this_call_info, pi->cmd[k][1]);
+						this_call_info->prv_ran_cmd_id = k;
+						strcpy(this_call_info->prv_ran_cmd_param, pi->cmd[k][1]);
+					}	
+				} else if (strcmp(pi->cmd[k][0], "Speak") == 0) {//"billing"
+					on_speak_command(pi->cmd[k][1], this_call_info->call_id);
+					this_call_info->prv_ran_cmd_id = k;
+					strcpy(this_call_info->prv_ran_cmd_param, pi->cmd[k][1]);
+				} else if (strcmp(pi->cmd[k][0], "EXT") == 0) {//EXT /files/responses.txt
 				}
-
-				if (found_action == 0) {
-					int lci = this_call_info->prv_ran_cmd_id;
-					char lcp[100];
-					strcpy(lcp,  this_call_info->prv_ran_cmd_param);
-					if (lci < pi->number_commands - 1 && strcmp(pi->cmd[lci+1][0], "EXT") == 0) {
-						printf("<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]);
-						pthread_mutex_lock(&write_ext_mutex);
-
-						FILE *fp = fopen (pi->cmd[lci+1][1], "a"); 
-						printf("<start>--------------<start>\n");
-						printf("<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
-						fprintf(fp, "<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
-						fprintf(fp, "%s\n", transcription);
-						fprintf(fp, "<end>--------------<end>\n");
-						fclose(fp);
-						this_call_info->done_ext = 1;
-						pthread_mutex_unlock(&write_ext_mutex);
-						printf("<<**>> current transcription result save end\n");
-					}
-
-					printf("<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription);
-					printf("<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference);
-
-					pjsua_call_info ci;
-					pjsua_call_get_info(this_call_info->call_id, &ci);
-					pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
-					this_call_info->rec_slot = PJSUA_INVALID_ID;
-					pjsua_call_hangup(this_call_info->call_id, 0, NULL, NULL);
-					printf("<<***>> unrecognized below response:\n\"%s\"\n", transcription);
+				found_action = 1;
+				break;
+			} else {
+				if (smallest_difference > difference) {
+					smallest_difference = difference;
+					strcpy(similarest, pi->user_input_list[k]);
 				}
 			}
+		}
+
+		if (found_action == 0) {
+			int lci = this_call_info->prv_ran_cmd_id;
+			char lcp[100];
+			strcpy(lcp,  this_call_info->prv_ran_cmd_param);
+			if (lci < pi->number_commands - 1 && strcmp(pi->cmd[lci+1][0], "EXT") == 0) {
+				printf("<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]);
+				pthread_mutex_lock(&write_ext_mutex);
+
+				FILE *fp = fopen (pi->cmd[lci+1][1], "a"); 
+				printf("<start>--------------<start>\n");
+				printf("<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
+				fprintf(fp, "<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp);
+				fprintf(fp, "%s\n", transcription);
+				fprintf(fp, "<end>--------------<end>\n");
+				fclose(fp);
+				this_call_info->done_ext = 1;
+				pthread_mutex_unlock(&write_ext_mutex);
+				printf("<<**>> current transcription result save end\n");
+			}
+
+			printf("<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription);
+			printf("<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference);
+
+			pjsua_call_info ci;
+			pjsua_call_get_info(this_call_info->call_id, &ci);
+			pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
+			this_call_info->rec_slot = PJSUA_INVALID_ID;
+			pjsua_call_hangup(this_call_info->call_id, 0, NULL, NULL);
+			printf("<<***>> unrecognized below response:\n\"%s\"\n", transcription);
 		}
 	}
 	
@@ -1732,9 +1730,6 @@ int main(int argc, char *argv[])
 
 	// download_wav("Other Options");
 	// return 0;
-
-	pthread_t send_thread_id;
-	pthread_create(&send_thread_id, NULL, send_thread_func, NULL);
 
 	setvbuf (stdout, NULL, _IONBF, 0);
     pjsua_acc_id acc_id;
