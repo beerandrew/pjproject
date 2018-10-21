@@ -20,8 +20,7 @@
 #define SIP_USER	"1111"
 #define SIP_PASSWD	"1111"
 #define WAV_FILE	"auddemo.wav"
-#define MAX_CALL_CNT 100
-#define MAX_TRY_CNT 3
+#define MAX_TRY_CNT 10
 
 char* str_copy(char *str) {
 	char *copied = malloc(sizeof(char)*(strlen(str)+1));
@@ -266,6 +265,109 @@ void on_call_end() {
 
 }
 void *make_call_to_profile(void *vargp);
+
+void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
+	struct call_info *this_call_info;
+	int call_index;
+	pthread_mutex_lock(&call_info_mutex);
+	call_index = find_index_from_call_id(call_id);
+	if (call_index != -1) {
+		this_call_info = current_calls[call_index];
+	}
+	pthread_mutex_unlock(&call_info_mutex);
+
+	if (call_index == -1) {
+		printf("call_index == 0 and returning\n");
+		return;
+	}
+
+	call_deinit_tonegen(call_id);
+
+	printf("<<**>> disconnect call (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
+
+	printf("<<**>>disconnect rec_slot callinfo = %x rec_slot = %d\n", this_call_info, this_call_info->rec_slot);
+	
+	if (this_call_info->rec_slot == PJSUA_INVALID_ID) {
+		printf("<<**>>Record is not created properly\n");
+	} else {
+		if (ci->conf_slot == PJSUA_INVALID_ID) {
+			printf("<<**>>Call source slot is invalid\n");
+		} else {
+			printf("<<**>>Going to start record disconnect\n");
+			pjsua_conf_disconnect(ci->conf_slot, this_call_info->rec_slot);
+			printf("<<**>>Finished record disconnect\n");
+		}
+	}
+	// TODO: destroy recorder
+	// pjsua_recorder_destroy(this_call_info->rec_id);
+	pipe_free(this_call_info->transcriptions);
+	this_call_info->rec_id = PJSUA_INVALID_ID;
+	this_call_info->rec_slot = PJSUA_INVALID_ID;
+	this_call_info->call_id = -1;
+	struct profile_info *pi = this_call_info->pi;
+	if (this_call_info->done_ext > 0) {
+		pi->finished_thread_cnt ++;
+		if (pi->finished_thread_cnt == pi->thread_cnt) {
+			printf("<<**>> do free of profile_info\n");
+		} else {
+			printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
+		}
+	} else if(this_call_info->isProfileI == 0) {
+		if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
+			printf("<<**>> restarting call since unexpected transcription received\n");
+			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
+			pthread_t make_profile_call_thread_id;
+			thread_param->pi = pi;
+			thread_param->number = this_call_info->ci;
+			thread_param->tried_cnt = this_call_info->tried_cnt + 1;
+			strcpy(thread_param->callerId, this_call_info->callerId);
+
+			printf(">>> redo call since did not get result %d\n", this_call_info->ci);
+			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
+		} else {
+			printf("<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
+
+			// pthread_mutex_lock(&write_ext_mutex);
+
+			// FILE *fp = fopen ("err.res", "a"); 
+			// printf("<err start>--------------<err start>\n");
+			// printf("<start ci=%d>--------------<start>\n", this_call_info->ci);
+			// fprintf(fp, "<start ci=%d>--------------<start>\n", this_call_info->ci);
+			// fprintf(fp, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
+			// fprintf(fp, "<end>--------------<end>\n");
+			// fclose(fp);
+
+			// pthread_mutex_unlock(&write_ext_mutex);
+
+			// pthread_mutex_lock(&call_info_mutex);
+
+			// pi->finished_thread_cnt ++;
+			// if (pi->finished_thread_cnt == pi->thread_cnt) {
+			// 	printf("<<**>> do free of profile_info in error thread\n");
+			// 	free(pi->phone);
+			// 	free(pi->name);
+			// 	int x = 0, y = 0;
+			// 	for (x = 0; x < pi->number_commands; x ++) {
+			// 		for (y = 0; y < pi->cmdLen[x]; y ++) {
+			// 			free(pi->cmd[x][y]);
+			// 		}
+			// 		free(pi->cmd[x]);
+			// 	}
+			// } else {
+			// 	printf("<<**>>Currently finished %d in total %d  in error thread\n", pi->finished_thread_cnt, pi->thread_cnt);
+			// }
+
+			// pthread_mutex_unlock(&call_info_mutex);
+		}
+	}
+	pthread_mutex_lock(&call_info_mutex);
+	
+	this_call_info->disconnected = 1;
+	vector_erase(current_calls, call_index);
+
+	pthread_mutex_unlock(&call_info_mutex);
+}
+
 /* Callback called by the library when call's state has changed */
 static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 {
@@ -280,106 +382,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 			 ci.state_text.ptr));
 
 	if (strcmp(ci.state_text.ptr, "DISCONNCTD") == 0) {
-
-		struct call_info *this_call_info;
-		int call_index;
-		pthread_mutex_lock(&call_info_mutex);
-		call_index = find_index_from_call_id(call_id);
-		if (call_index != -1) {
-			this_call_info = current_calls[call_index];
-		}
-		pthread_mutex_unlock(&call_info_mutex);
-
-		if (call_index == -1) {
-			printf("call_index == 0 and returning\n");
-			return;
-		}
-
-		call_deinit_tonegen(call_id);
-
-		printf("<<**>> disconnect call (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
-
-		printf("<<**>>disconnect rec_slot callinfo = %x rec_slot = %d\n", this_call_info, this_call_info->rec_slot);
-		
-		if (this_call_info->rec_slot == PJSUA_INVALID_ID) {
-			printf("<<**>>Record is not created properly\n");
-		} else {
-			if (ci.conf_slot == PJSUA_INVALID_ID) {
-				printf("<<**>>Call source slot is invalid\n");
-			} else {
-				printf("<<**>>Going to start record disconnect\n");
-				pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
-				printf("<<**>>Finished record disconnect\n");
-			}
-		}
-		// TODO: destroy recorder
-		// pjsua_recorder_destroy(this_call_info->rec_id);
-		pipe_free(this_call_info->transcriptions);
-		this_call_info->rec_id = PJSUA_INVALID_ID;
-		this_call_info->rec_slot = PJSUA_INVALID_ID;
-		this_call_info->call_id = -1;
-		struct profile_info *pi = this_call_info->pi;
-		if (this_call_info->done_ext > 0) {
-			pi->finished_thread_cnt ++;
-			if (pi->finished_thread_cnt == pi->thread_cnt) {
-				printf("<<**>> do free of profile_info\n");
-			} else {
-				printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
-			}
-		} else if(this_call_info->isProfileI == 0) {
-			if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
-				printf("<<**>> restarting call since unexpected transcription received\n");
-				struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
-				pthread_t make_profile_call_thread_id;
-				thread_param->pi = pi;
-				thread_param->number = this_call_info->ci;
-				thread_param->tried_cnt = this_call_info->tried_cnt + 1;
-				strcpy(thread_param->callerId, this_call_info->callerId);
-
-				printf(">>> redo call since did not get result %d\n", this_call_info->ci);
-				pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
-			} else {
-				printf("<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
-
-				// pthread_mutex_lock(&write_ext_mutex);
-
-				// FILE *fp = fopen ("err.res", "a"); 
-				// printf("<err start>--------------<err start>\n");
-				// printf("<start ci=%d>--------------<start>\n", this_call_info->ci);
-				// fprintf(fp, "<start ci=%d>--------------<start>\n", this_call_info->ci);
-				// fprintf(fp, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
-				// fprintf(fp, "<end>--------------<end>\n");
-				// fclose(fp);
-
-				// pthread_mutex_unlock(&write_ext_mutex);
-
-				// pthread_mutex_lock(&call_info_mutex);
-
-				// pi->finished_thread_cnt ++;
-				// if (pi->finished_thread_cnt == pi->thread_cnt) {
-				// 	printf("<<**>> do free of profile_info in error thread\n");
-				// 	free(pi->phone);
-				// 	free(pi->name);
-				// 	int x = 0, y = 0;
-				// 	for (x = 0; x < pi->number_commands; x ++) {
-				// 		for (y = 0; y < pi->cmdLen[x]; y ++) {
-				// 			free(pi->cmd[x][y]);
-				// 		}
-				// 		free(pi->cmd[x]);
-				// 	}
-				// } else {
-				// 	printf("<<**>>Currently finished %d in total %d  in error thread\n", pi->finished_thread_cnt, pi->thread_cnt);
-				// }
-
-				// pthread_mutex_unlock(&call_info_mutex);
-			}
-		}
-		pthread_mutex_lock(&call_info_mutex);
-		
-		this_call_info->disconnected = 1;
-		vector_erase(current_calls, call_index);
-
-		pthread_mutex_unlock(&call_info_mutex);
+		call_hangup_retry(call_id, &ci);
 	}
 	printf("<<**>> on_call_state ended");
 }
@@ -742,6 +745,15 @@ int getDifference(char *a, char *b)
 // Callback for the test protocol
 static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void *user, void* in, size_t len)
 {
+	pj_status_t status;
+	pj_thread_desc aPJThreadDesc;
+	if (!pj_thread_is_registered()) {
+		pj_thread_t *pjThread;
+		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
+		if (status != PJ_SUCCESS) {
+		}
+	}
+	
 	struct call_info *this_call_info;
 	int call_index;
 
@@ -777,6 +789,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	{
 	case LWS_CALLBACK_CLOSED:
 		printf("[Test Protocol %d] Connection closed.\n", call_id);
+		pjsua_call_info ci;
+		pjsua_call_get_info(call_id, &ci);
+		call_hangup_retry(call_id, &ci);
 		break;
 
 		// Our client received something
