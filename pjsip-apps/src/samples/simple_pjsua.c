@@ -1688,6 +1688,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 		for (j = 0; j < cnt; j ++) {
 			if (fgets(new_line, 20, fp) == NULL)
 				strcpy(new_line, "18008008000");
+			new_line[strcspn(new_line, "\n")] = 0;
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
 			pthread_t make_profile_call_thread_id;
 			thread_param->pi = pi;
