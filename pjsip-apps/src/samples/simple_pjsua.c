@@ -1483,7 +1483,7 @@ void *make_call_to_profile(void *vargp) {
     pj_str_t hname = pj_str("Custom");
     pj_str_t hvalue = pj_str(thread_param.callerId);
 	printf("----------------");
-	printf("CALLERID: %s", thread_param.callerId);
+	printf("CALLERID: \"%s\" %s %d", thread_param.callerId, hvalue.ptr, hvalue.slen);
 	printf("----------------");
     pjsua_msg_data_init(&msg_data_);
     pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
