@@ -1410,8 +1410,8 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
   pj_bzero(d, sizeof(d));
   for (i=0; i<count; ++i) {
     d[i].digit = digits[i];
-    d[i].on_msec = 1000;
-    d[i].off_msec = 1000;
+    d[i].on_msec = 300;
+    d[i].off_msec = 500;
     d[i].volume = 0;
   }
 	printf("--------sending dtmf\n-");
