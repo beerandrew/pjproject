@@ -714,18 +714,6 @@ int getDifference(char *a, char *b)
 // Callback for the test protocol
 static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void *user, void* in, size_t len)
 {
-	pj_status_t status;
-	pj_thread_desc aPJThreadDesc;
-	if (!pj_thread_is_registered()) {
-		pj_thread_t *pjThread;
-		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
-		if (status != PJ_SUCCESS) {
-		}
-	}
-
-	// printf("<<**>> callback_test started");
-
-
 	struct call_info *this_call_info;
 	int call_index;
 
@@ -838,7 +826,6 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
 							pipe_push(p, transcription, 1);
 							pipe_producer_free(p);
-							printf("************PUSHED TO PIPE %s *******", transcription);
 						}
 					}
 					// if (strstr(transcription, "other options") != NULL) {
