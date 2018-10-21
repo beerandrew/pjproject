@@ -411,9 +411,9 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 			}
 		}
 		
-		if (this_call_info->sending) {
-			return 0;
-		}
+		// if (this_call_info->sending) {
+		// 	return 0;
+		// }
 		pthread_mutex_lock(&count_mutex);
 		 
 		// printf("<<**>> b\n");
