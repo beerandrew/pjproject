@@ -920,7 +920,6 @@ void *send_thread_func(void *vargp) {
 
 	int i;
 	while(1) {
-		sleep(1);
 		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			if (this_call_info->transcriptions->begin + this_call_info->transcriptions->elem_size == this_call_info->transcriptions->end)
