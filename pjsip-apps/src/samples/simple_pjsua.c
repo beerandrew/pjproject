@@ -250,7 +250,7 @@ void init_call_info(struct call_info *ci) {
 	ci->rec_slot = PJSUA_INVALID_ID;
 	ci->transcription[0] = '\0';
 	ci->done_ext = 0;
-	ci->transcriptions = pipe_new(sizeof(char) * 1000, 0);
+	ci->transcriptions = pipe_new(sizeof(char) * 1000, 10);
 }
 
 void on_call_end() {
