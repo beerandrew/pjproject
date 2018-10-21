@@ -1459,7 +1459,7 @@ void *make_call_to_profile(void *vargp) {
 	struct call_info *newCall = malloc( sizeof(struct call_info) );
 	init_call_info(newCall);
 
-	strcpy(newCall->callerId, thread_param.callerId)
+	strcpy(newCall->callerId, thread_param.callerId);
 
 	pthread_mutex_lock(&call_info_mutex);
 
