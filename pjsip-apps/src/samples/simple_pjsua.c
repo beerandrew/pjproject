@@ -68,6 +68,7 @@ struct call_info {
 	int tried_cnt;
 	pipe_t* transcriptions;
 	char callerId[20];
+	bool sending;
 };
 
 struct call_dtmf_data
@@ -112,6 +113,7 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
 void *send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
+	this_call_info->sending = 1;
 	printf("Call %d: Dial %s\n", this_call_info->call_id, dial_number);
 	call_play_digit(this_call_info->call_id, dial_number);
 }
@@ -255,6 +257,7 @@ void init_call_info(struct call_info *ci) {
 	ci->transcription[0] = '\0';
 	ci->done_ext = 0;
 	ci->transcriptions = pipe_new(sizeof(char) * 1000, 0);
+	ci->sending = 0;
 }
 
 void on_call_end() {
@@ -373,7 +376,23 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 		vector_erase(current_calls, call_index);
 
 		pthread_mutex_unlock(&call_info_mutex);
-	}
+	} else if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
+      call_deinit_tonegen(call_id);
+		struct call_info *this_call_info;
+		int call_index;
+		pthread_mutex_lock(&call_info_mutex);
+		call_index = find_index_from_call_id(call_id);
+		if (call_index != -1) {
+			this_call_info = current_calls[call_index];
+		}
+		pthread_mutex_unlock(&call_info_mutex);
+
+		if (call_index == -1) {
+			printf("call_index == 0 and returning\n");
+			return;
+		}
+		this_call_info->sending = 0;
+   }
 	printf("<<**>> on_call_state ended");
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
@@ -393,7 +412,10 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 			return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
 		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
-
+		// don't send while sending
+		if (this_call_info->sending) {
+			return 0;
+		}
 		pthread_mutex_lock(&count_mutex);
 		 
 		// printf("<<**>> b\n");
@@ -822,6 +844,11 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 						
 						// printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
 						printf("<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, call_id, transcription);
+						
+						// ignore response while sending dtmf
+						if (this_call_info->sending) {
+							return;
+						}
 
 						if (this_call_info->isProfileI && this_call_info->transcription[0] != '\0') {
 							int ci = user_input_cnt; // current response index
@@ -1367,7 +1394,7 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
     d[i].off_msec = 200;
     d[i].volume = 0;
   }
-
+	printf("--------sending dtmf\n-")
   pjmedia_tonegen_play_digits(cd->tonegen, count, d, 0);
 }
 
@@ -1384,6 +1411,7 @@ void call_deinit_tonegen(pjsua_call_id call_id)
   pj_pool_release(cd->pool);
 
   pjsua_call_set_user_data(call_id, NULL);
+  printf("DEINIT TONE GEN\n");
 }
 
 void store_response(char *response) {
