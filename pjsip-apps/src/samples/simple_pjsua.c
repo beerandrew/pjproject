@@ -1607,7 +1607,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 				char *spacel = strpbrk(new_line, " ");
 				if (spacel != NULL) {
 					strcpy(pi->phonenumbers, spacel + 1);
-					spacel = '\0';
+					*spacel = '\0';
 					strcpy(pi->phone, new_line);
 					printf("analyze profile, phone = %s, phonenumbers = %s\n", pi->phone, pi->phonenumbers);
 				} else {
