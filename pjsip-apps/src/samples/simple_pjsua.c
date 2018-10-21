@@ -929,7 +929,6 @@ void *send_thread_func(void *vargp) {
 	}
 
 	while(1) {
-		sleep(500);
 		for(int i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			char *transcription;
