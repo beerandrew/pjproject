@@ -108,7 +108,7 @@ void call_play_digit(pjsua_call_id call_id, const char *digits);
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	printf("Call %d: Dial %s", this_call_info->call_id, dial_number);
+	printf("Call %d: Dial %s\n", this_call_info->call_id, dial_number);
 	call_play_digit(this_call_info->call_id, dial_number);
 }
 void on_speak_command(char *to_speak, pjsua_call_id call_id) {
@@ -303,6 +303,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 		}
 		// TODO: destroy recorder
 		// pjsua_recorder_destroy(this_call_info->rec_id);
+		pipe_free(this_call_info->transcriptions);
 		this_call_info->rec_id = PJSUA_INVALID_ID;
 		this_call_info->rec_slot = PJSUA_INVALID_ID;
 		this_call_info->call_id = -1;
