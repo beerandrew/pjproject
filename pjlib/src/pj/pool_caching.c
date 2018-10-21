@@ -197,9 +197,7 @@ static pj_pool_t* cpool_create_pool(pj_pool_factory *pf,
 
     /* Increment used count. */
     ++cp->used_count;
-    printf("------3-----before pj_lock_relaease --------------\n");
     pj_lock_release(cp->lock);
-    printf("------4-----after pj_lock_relaease --------------\n");
     return pool;
 }
 

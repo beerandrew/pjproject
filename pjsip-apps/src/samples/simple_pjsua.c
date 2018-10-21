@@ -931,21 +931,14 @@ void *send_thread_func(void *vargp) {
 	int i;
 	while(1) {
 		sleep(1);
-		printf("***CALLS %d\n", vector_size(current_calls));
 		for(i = 0; i < vector_size(current_calls); i ++) {
 			struct call_info *this_call_info = current_calls[i];
 			if (this_call_info->transcriptions->begin + this_call_info->transcriptions->elem_size == this_call_info->transcriptions->end)
 				continue;
 			char transcription[1000];
 			pipe_consumer_t* c = pipe_consumer_new(this_call_info->transcriptions);
-			printf("***A\n");
 			size_t ret = pipe_pop(c, transcription, 1);
-			printf("***B\n");
-			if (ret > 0) {
-				printf("************ POPPED ****************\n");
-			}
 			pipe_consumer_free(c);
-			printf("***C\n");
 			if (ret > 0) {
 				int found_action = 0;
 				int smallest_difference = 100000;
