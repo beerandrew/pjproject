@@ -249,16 +249,20 @@ void init_call_info(struct call_info *ci) {
 	ci->isProfileI = 0;
 	ci->disconnected = 0;
 	ci->wsiTest = NULL;// malloc( sizeof(struct lws) );
-	// ci->media_port = NULL;
+	ci->ws_thread_id = NULL;
 	ci->pi = NULL;
 	ci->bufferSize = 0;
-	ci->call_id = -1;
+	ci->call_id = PJSUA_INVALID_ID;
 	ci->rec_id = PJSUA_INVALID_ID;
 	ci->rec_slot = PJSUA_INVALID_ID;
 	ci->transcription[0] = '\0';
 	ci->done_ext = 0;
 	ci->transcriptions = pipe_new(sizeof(char) * 1000, 0);
 	ci->sending = 0;
+	ci->ci = -1;
+	ci->prv_ran_cmd_id = 0;
+	ci->tried_cnt = 0;
+	ci->transcriptions = NULL;
 }
 
 void on_call_end() {
@@ -1045,6 +1049,7 @@ void *send_thread_func(void *vargp) {
 			char lcp[100];
 			strcpy(lcp,  this_call_info->prv_ran_cmd_param);
 			if (lci < pi->number_commands - 1 && strcmp(pi->cmd[lci+1][0], "EXT") == 0) {
+				printf("---------Going to extract----------- prv_ran_cmd_id: %d num_commands: %d \n", lci, pi->number_commands);
 				printf("<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]);
 				pthread_mutex_lock(&write_ext_mutex);
 
@@ -1431,7 +1436,7 @@ void call_deinit_tonegen(pjsua_call_id call_id)
   pj_pool_release(cd->pool);
 
   pjsua_call_set_user_data(call_id, NULL);
-  printf("DEINIT TONE GEN\n");
+  printf("DEINIT TONE GEN --- %d\n", call_id);
 }
 
 void store_response(char *response) {
