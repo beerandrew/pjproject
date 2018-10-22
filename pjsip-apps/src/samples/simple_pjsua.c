@@ -1611,7 +1611,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 					strcpy(pi->phone, new_line);
 				} else {
 					fclose(fp);
-					PJ_LOG(1, (THIS_FILE, "Wrong profile format\n"))
+					PJ_LOG(1, (THIS_FILE, "Wrong profile format\n"));
 					return;
 				}
 			} else if (n_profile_lines % 3 == 1) {
