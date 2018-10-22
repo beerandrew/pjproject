@@ -1446,6 +1446,15 @@ void save_user_responses() {
 }
 
 void *make_call_to_profile(void *vargp) {
+	pj_status_t status;
+	pj_thread_desc aPJThreadDesc;
+	if (!pj_thread_is_registered()) {
+		pj_thread_t *pjThread;
+		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
+		if (status != PJ_SUCCESS) {
+		}
+	}
+	
 	PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
 	struct call_to_profile_with_number thread_param = *(struct call_to_profile_with_number *) vargp;
 	free(vargp);
@@ -1457,15 +1466,6 @@ void *make_call_to_profile(void *vargp) {
 	char contact[200];
 	sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
 	PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
-
-	pj_status_t status;
-	pj_thread_desc aPJThreadDesc;
-	if (!pj_thread_is_registered()) {
-		pj_thread_t *pjThread;
-		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
-		if (status != PJ_SUCCESS) {
-		}
-	}
 	
 	struct call_info *newCall = malloc( sizeof(struct call_info) );
 	init_call_info(newCall);
