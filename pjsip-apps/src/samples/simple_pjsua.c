@@ -1442,7 +1442,7 @@ void save_user_responses() {
 	user_input_cnt = 0;
 	current_profile_name = NULL;
 	fclose(fp);
-	PJ_LOG(1, (THIS_FILE, ("<<**>> save_user_responses ended"));
+	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses ended"));
 }
 
 void *make_call_to_profile(void *vargp) {
