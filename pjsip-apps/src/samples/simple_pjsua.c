@@ -262,7 +262,6 @@ void init_call_info(struct call_info *ci) {
 	ci->ci = -1;
 	ci->prv_ran_cmd_id = 0;
 	ci->tried_cnt = 0;
-	ci->transcriptions = NULL;
 }
 
 void on_call_end() {
