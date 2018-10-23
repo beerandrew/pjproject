@@ -421,18 +421,18 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
 		this_call_info->bufferSize += frame->size;
-		printf("BUF:%d\n", this_call_info->bufferSize);
+		// printf("BUF:%d\n", this_call_info->bufferSize);
 		// printf("<<**>> c\n");
 
 		pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
 
 
 		if (this_call_info->wsiTest != NULL){
-			printf("<<**>> Issue writable c\n");
+			// printf("<<**>> Issue writable c\n");
 			lws_callback_on_writable(this_call_info->wsiTest);
 		}
 		else {
-			printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
+			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
 		}
 	} else {
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
