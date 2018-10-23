@@ -888,7 +888,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 		// The server notifies us that we can write data
 	case LWS_CALLBACK_CLIENT_WRITEABLE:
-		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] The client is able to write.\n", call_id));
+		// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] The client is able to write.\n", call_id));
 		if (call_index != -1) {
 			if (this_call_info->bufferSize == 0)
 				break;
