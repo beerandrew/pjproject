@@ -266,7 +266,7 @@ void init_call_info(struct call_info *ci) {
 	ci->ci = -1;
 	ci->prv_ran_cmd_id = 0;
 	ci->tried_cnt = 0;
-	ci->ws_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_init ( &ci->ws_buf_mutex, NULL);
 }
 
 void on_call_end() {
@@ -299,6 +299,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	}
 	// TODO: destroy recorder
 	// pjsua_recorder_destroy(this_call_info->rec_id);
+	pthread_mutex_destroy(&this_call_info->ws_buf_mutex);
 	pipe_free(this_call_info->transcriptions);
 	this_call_info->rec_id = PJSUA_INVALID_ID;
 	this_call_info->rec_slot = PJSUA_INVALID_ID;
