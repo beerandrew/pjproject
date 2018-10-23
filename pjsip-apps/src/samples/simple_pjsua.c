@@ -70,6 +70,7 @@ struct call_info {
 	pipe_t* transcriptions;
 	char callerId[20];
 	bool sending;
+	bool shouldSendStop;
 };
 
 struct call_dtmf_data
@@ -115,6 +116,7 @@ void *send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
 	this_call_info->sending = 1;
+	this_call_info->shouldSendStop = 1;
 	PJ_LOG(1, (THIS_FILE, "Call %d: Dial %s\n", this_call_info->call_id, dial_number));
 	call_play_digit(this_call_info->call_id, dial_number);
 }
@@ -258,6 +260,7 @@ void init_call_info(struct call_info *ci) {
 	ci->done_ext = 0;
 	ci->transcriptions = pipe_new(sizeof(char) * 1000, 0);
 	ci->sending = 0;
+	ci->shouldSendStop = 0;
 	ci->ci = -1;
 	ci->prv_ran_cmd_id = 0;
 	ci->tried_cnt = 0;
@@ -402,12 +405,13 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 			if (!pjmedia_tonegen_is_busy(cd->tonegen)) {
 				call_deinit_tonegen(this_call_info->call_id);
 				this_call_info->sending = 0;
+				this_call_info->shouldSendStop = 0;
 			}
 		}
 		
-		// if (this_call_info->sending) {
-		// 	return 0;
-		// }
+		if (this_call_info->sending) {
+			return 0;
+		}
 		pthread_mutex_lock(&count_mutex);
 		 
 		// printf("<<**>> b\n");
@@ -742,15 +746,18 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 	// The message we send back to the echo server
 	const char msg[128] = "{\"action\": \"start\", \"content-type\": \"audio/l16;rate=16000\", \"interim_results\": true}";
-
+	const char stopmsg[128] = "{\"action\": \"stop\"}";
 	// The buffer holding the data to send
 	// NOTICE: data which is sent always needs to have a certain amount of memory (LWS_PRE) preserved for headers
 	unsigned char buf[LWS_PRE + 128];
+	unsigned char stopbuf[LWS_PRE + 128];
 	
 	// Allocating the memory for the buffer, and copying the message to it
 	memset(&buf[LWS_PRE], 0, 128);
+	memset(&stopbuf[LWS_PRE], 0, 128);
 	
 	strncpy((char*)buf + LWS_PRE, msg, 128);
+	strncpy((char*)stopbuf + LWS_PRE, msg, 128);
 
 	// For which reason was this callback called?
 	switch (reason)
@@ -894,6 +901,11 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			// printf("Freeing %x...", this_call_info->globalBuf);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE5\n");
 			pthread_mutex_unlock(&count_mutex);
+
+			if (this_call_info->shouldSendStop) {
+				lws_write(wsi, &stopbuf[LWS_PRE], strlen(stopmsg), LWS_WRITE_TEXT);
+				this_call_info->shouldSendStop = 0;
+			}
 		}
 		break;
 
