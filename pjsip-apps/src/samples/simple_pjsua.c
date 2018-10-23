@@ -29,7 +29,6 @@ char* str_copy(char *str) {
 }
 
 pthread_mutex_t ws_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t call_info_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t write_ext_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -71,6 +70,9 @@ struct call_info {
 	char callerId[20];
 	bool sending;
 	bool shouldSendStop;
+
+	// mutex
+	pthread_mutex_t ws_buf_mutex;
 };
 
 struct call_dtmf_data
@@ -264,6 +266,7 @@ void init_call_info(struct call_info *ci) {
 	ci->ci = -1;
 	ci->prv_ran_cmd_id = 0;
 	ci->tried_cnt = 0;
+	ci->ws_buf_mutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
 void on_call_end() {
@@ -412,7 +415,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		if (this_call_info->sending) {
 			return 0;
 		}
-		pthread_mutex_lock(&count_mutex);
+		pthread_mutex_lock(&this_call_info->ws_buf_mutex);
 		 
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
@@ -420,7 +423,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		printf("BUF:%d\n", this_call_info->bufferSize);
 		// printf("<<**>> c\n");
 
-		pthread_mutex_unlock(&count_mutex);
+		pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
 
 
 		if (this_call_info->wsiTest != NULL){
@@ -895,7 +898,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 				break;
 			}
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE1\n");
-			pthread_mutex_lock(&count_mutex);
+			pthread_mutex_lock(&this_call_info->ws_buf_mutex);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE2\n");
 			// char *binary_buf = malloc(sizeof(char) * (LWS_PRE + this_call_info->bufferSize));
 			memcpy(&binary_buf[LWS_PRE], this_call_info->globalBuf, this_call_info->bufferSize);
@@ -906,7 +909,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE4\n");
 			// printf("Freeing %x...", this_call_info->globalBuf);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE5\n");
-			pthread_mutex_unlock(&count_mutex);
+			pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
 		}
 		break;
 
