@@ -417,7 +417,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> b\n");
 		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
 		this_call_info->bufferSize += frame->size;
-		// printf("BUF:%d\n", this_call_info->bufferSize);
+		printf("BUF:%d\n", this_call_info->bufferSize);
 		// printf("<<**>> c\n");
 
 		pthread_mutex_unlock(&count_mutex);
@@ -904,6 +904,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 			if (this_call_info->shouldSendStop) {
 				lws_write(wsi, &stopbuf[LWS_PRE], strlen(stopmsg), LWS_WRITE_TEXT);
+				PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Issue Stop\n", call_id));
 				this_call_info->shouldSendStop = 0;
 			}
 		}
