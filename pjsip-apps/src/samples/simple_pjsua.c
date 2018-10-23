@@ -757,7 +757,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	memset(&stopbuf[LWS_PRE], 0, 128);
 	
 	strncpy((char*)buf + LWS_PRE, msg, 128);
-	strncpy((char*)stopbuf + LWS_PRE, msg, 128);
+	strncpy((char*)stopbuf + LWS_PRE, stopmsg, 128);
 
 	// For which reason was this callback called?
 	switch (reason)
