@@ -1609,6 +1609,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			pj_str_t hvalue = pj_str("19127537082");
 			pjsua_msg_data_init(&msg_data_);
 			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
+			pj_list_push_back(&msg_data_.hdr_list, &warn);
 
 			pj_status_t status = pjsua_call_make_call(*acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
 			if (status != PJ_SUCCESS) 
