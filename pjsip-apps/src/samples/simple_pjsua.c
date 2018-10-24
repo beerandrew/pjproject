@@ -793,7 +793,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 
 			if (value == NULL) {
 				PJ_LOG(1, (THIS_FILE, "Unable to parse data\n"));
-				exit(1);
+				break;
 			}
 			// process_value(value, 0);
 			if (value->type != json_object) {
