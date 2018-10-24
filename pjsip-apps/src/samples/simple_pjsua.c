@@ -1561,16 +1561,27 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 				puts("Profile doesn't exist");
 				return;
 			}
-			char phone[60];
-			fgets (phone, 60, fp);
-			if (phone == NULL) {
+			char line[200], phone[200], phonenumbers[200];
+			fgets (line, 60, fp);
+			if (line == NULL) {
 				puts("Wrong profile format");
 				return;
 			}
 
 			// Remove newline at ending
-			phone[strcspn(phone, "\n")] = 0;
+			line[strcspn(line, "\n")] = 0;
 			fclose(fp);
+
+			char *spacel = strpbrk(line, " ");
+			if (spacel != NULL) {
+				strcpy(phonenumbers, spacel + 1);
+				*spacel = '\0';
+				strcpy(phone, line);
+			} else {
+				fclose(fp);
+				PJ_LOG(1, (THIS_FILE, "Wrong profile format\n"));
+				return;
+			}
 			
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
@@ -1845,7 +1856,7 @@ int main(int argc, char *argv[])
     for (;;) {
 
 		puts("To create profile, run");
-		puts("\t Profile -C \"profile_name\" phonenumber\n\n");
+		puts("\t Profile -C \"profile_name\" phonenumber phonenumberslist.txt\n\n");
 
 		puts("To provide instructions to the profile, run");
 		puts("\t Profile -I \"profile_name\"\n\n");
