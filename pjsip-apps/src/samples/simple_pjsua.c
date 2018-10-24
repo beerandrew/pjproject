@@ -792,9 +792,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			// Parse JSON
 			json_char* json;
         	json_value* value;
-        	int json_size = strlen((char*)in);
+        	int json_size = strlen((char*)this_call_info->wsData);
 
-			json = (json_char*)in;
+			json = (json_char*)this_call_info->wsData;
 
 			value = json_parse(json,json_size);
 
