@@ -52,7 +52,8 @@ struct call_info {
 	int isProfileI;
 	int disconnected;
 	struct lws *wsiTest; // WebSocket interface
-	pthread_t ws_thread_id; 
+	pthread_t ws_thread_id;
+	char wsData[2000];
 	char globalBuf[1000000];
 	int bufferSize;
 	// pjmedia_port* media_port;
@@ -267,6 +268,7 @@ void init_call_info(struct call_info *ci) {
 	ci->prv_ran_cmd_id = 0;
 	ci->tried_cnt = 0;
 	pthread_mutex_init ( &ci->ws_buf_mutex, NULL);
+	memset(ci->wsData, 0, 2000);
 }
 
 void on_call_end() {
@@ -781,7 +783,12 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLIENT_RECEIVE:
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
-			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in));
+			if (call_index != -1) {
+				strcat(this_call_info->wsData, in);
+			}
+
+			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
+			
 			// Parse JSON
 			json_char* json;
         	json_value* value;
@@ -795,6 +802,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 				PJ_LOG(1, (THIS_FILE, "Unable to parse data\n"));
 				break;
 			}
+			this_call_info->wsData[0] = '\0';
 			// process_value(value, 0);
 			if (value->type != json_object) {
 				// printf("----------- results not fetch");
