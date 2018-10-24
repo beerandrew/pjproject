@@ -7,7 +7,7 @@ from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
 
 a = functools.partial(random.randint, 0, 9)
-gen = lambda: "+1{}{}{}{}{}{}{}{}{}{}".format(a(), a(), a(), a(), a(), a(), a(), a(), a(), a())
+gen = lambda: "1{}{}{}{}{}{}{}{}{}{}".format(a(), a(), a(), a(), a(), a(), a(), a(), a(), a())
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser(description = 'Say hello')
