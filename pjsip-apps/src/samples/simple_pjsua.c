@@ -1601,7 +1601,16 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			sprintf(contact, "sip:%s@%s", phone, SIP_DOMAIN);
 			puts(contact);
 			pj_str_t uri = pj_str(contact);	
-			pj_status_t status = pjsua_call_make_call(*acc_id, &uri, 0, NULL, NULL, &this_call_info->call_id);
+
+			// Custom header
+			pjsua_msg_data msg_data_;
+			pjsip_generic_string_hdr warn;
+			pj_str_t hname = pj_str("Custom");
+			pj_str_t hvalue = pj_str("19127537082");
+			pjsua_msg_data_init(&msg_data_);
+			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
+
+			pj_status_t status = pjsua_call_make_call(*acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
 			if (status != PJ_SUCCESS) 
 				error_exit("Error making call", status);
 			
