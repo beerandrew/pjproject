@@ -7,7 +7,7 @@ from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
 
 a = functools.partial(random.randint, 0, 9)
-gen = lambda: "1{}{}{}{}{}{}{}{}{}{}".format(a(), a(), a(), a(), a(), a(), a(), a(), a(), a())
+gen = lambda: "+1{}{}{}{}{}{}{}{}{}{}".format(a(), a(), a(), a(), a(), a(), a(), a(), a(), a())
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser(description = 'Say hello')
@@ -20,5 +20,5 @@ if __name__== "__main__":
         number = gen()
         if carrier._is_mobile(number_type(phonenumbers.parse(number))) is True:
             count -= 1
-            print(number)
+            number = number[1:]
             file.write(number+'\n')
