@@ -18,7 +18,7 @@
 
 #define SIP_DOMAIN	"18.224.233.81"
 #define SIP_USER	"1111"
-#define SIP_PASSWD	"1111"
+#define SIP_PASSWD	"QAb+yyt6MnjiqMrS7xy3"
 #define WAV_FILE	"auddemo.wav"
 #define MAX_TRY_CNT 10
 
