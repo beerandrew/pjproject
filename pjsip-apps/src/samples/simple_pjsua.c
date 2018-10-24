@@ -781,7 +781,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLIENT_RECEIVE:
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
-			// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in));
+			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in));
 			// Parse JSON
 			json_char* json;
         	json_value* value;
@@ -1772,7 +1772,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			} else { // Dial 12345
 				on_dial_command(this_call_info, args[1]);
 				store_response(Line);
-			}	
+			}
 		} else if (strcmp(args[0], "Speak") == 0) {//"billing"
 			on_speak_command(args[1], this_call_info->call_id);
 			store_response(Line);
