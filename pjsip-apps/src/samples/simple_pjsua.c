@@ -1717,6 +1717,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 
 			PJ_LOG(1, (THIS_FILE, ">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt));
 			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
+			sleep(1);
 		}
 		fclose(fp);
 	} else if(current_profile_name) {
