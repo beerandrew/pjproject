@@ -781,7 +781,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLIENT_RECEIVE:
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
-			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in));
+			// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, (char*)in));
 			// Parse JSON
 			json_char* json;
         	json_value* value;
