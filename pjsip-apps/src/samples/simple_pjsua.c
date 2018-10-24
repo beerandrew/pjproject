@@ -298,10 +298,10 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 		}
 	}
 	// TODO: destroy recorder
-	// pjsua_recorder_destroy(this_call_info->rec_id);
+	if (this_call_info->rec_id != PJSUA_INVALID_ID)
+		pjsua_recorder_destroy(this_call_info->rec_id);
 	pthread_mutex_destroy(&this_call_info->ws_buf_mutex);
 	pipe_free(this_call_info->transcriptions);
-	this_call_info->rec_id = PJSUA_INVALID_ID;
 	this_call_info->rec_slot = PJSUA_INVALID_ID;
 	this_call_info->call_id = -1;
 	struct profile_info *pi = this_call_info->pi;
