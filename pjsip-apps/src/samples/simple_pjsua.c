@@ -268,7 +268,7 @@ void init_call_info(struct call_info *ci) {
 	ci->sending = 0;
 	ci->shouldSendStop = 0;
 	ci->ci = -1;
-	ci->prv_ran_cmd_id = 0;
+	ci->prv_ran_cmd_id = -1;
 	ci->tried_cnt = 0;
 	pthread_mutex_init ( &ci->ws_buf_mutex, NULL);
 	memset(ci->wsData, 0, 2000);
@@ -985,7 +985,7 @@ void *send_thread_func(void *vargp) {
 		char similarest[1000], tempa[1000];
 		struct profile_info *pi = this_call_info->pi;
 		int k;
-		for (k = 0; k < pi->number_commands; k ++) {
+		for (k = this_call_info->prv_ran_cmd_id + 1; k < pi->number_commands; k ++) {
 			int limit = strlen(pi->user_input_list[k])/7 + 7;
 			strcpy(tempa, transcription);
 			// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
