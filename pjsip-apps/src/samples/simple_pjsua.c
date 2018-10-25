@@ -127,9 +127,12 @@ void on_speak_command(char *to_speak, pjsua_call_id call_id) {
 	PJ_LOG(1, (THIS_FILE, "<<**>> on_speak_command started"));
 	PJ_LOG(1, (THIS_FILE, "Speak %s call_id: %d", to_speak, call_id));
 	
-	download_wav(to_speak);
 	char wavfile[200];
     sprintf(wavfile, "%s.wav", to_speak);
+
+	if( access( fname, F_OK ) == -1 ) {
+		download_wav(to_speak);
+	}
 
 	pj_status_t status;
 
@@ -1401,7 +1404,7 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
     d[i].digit = digits[i];
     d[i].on_msec = 100;
     d[i].off_msec = 100;
-    d[i].volume = 16383;
+    d[i].volume = 0;
   }
 	PJ_LOG(1, (THIS_FILE, "--------sending dtmf\n-"));
   pjmedia_tonegen_play_digits(cd->tonegen, count, d, 0);
