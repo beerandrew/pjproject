@@ -4563,7 +4563,7 @@ PJ_DECL(pj_status_t) pjsua_acc_set_transport(pjsua_acc_id acc_id,
  * Maximum simultaneous calls.
  */
 #ifndef PJSUA_MAX_CALLS
-#   define PJSUA_MAX_CALLS	    1000
+#   define PJSUA_MAX_CALLS	    10000
 #endif
 
 /**
@@ -6262,7 +6262,7 @@ PJ_DECL(pj_status_t) pjsua_im_typing(pjsua_acc_id acc_id,
  * for pjsua_media_config.max_media_ports.
  */
 #ifndef PJSUA_MAX_CONF_PORTS
-#   define PJSUA_MAX_CONF_PORTS		254
+#   define PJSUA_MAX_CONF_PORTS		100000
 #endif
 
 /**
@@ -6311,7 +6311,7 @@ PJ_DECL(pj_status_t) pjsua_im_typing(pjsua_acc_id acc_id,
  * The maximum file player.
  */
 #ifndef PJSUA_MAX_PLAYERS
-#   define PJSUA_MAX_PLAYERS		32
+#   define PJSUA_MAX_PLAYERS		100000
 #endif
 
 
@@ -6319,7 +6319,7 @@ PJ_DECL(pj_status_t) pjsua_im_typing(pjsua_acc_id acc_id,
  * The maximum file player.
  */
 #ifndef PJSUA_MAX_RECORDERS
-#   define PJSUA_MAX_RECORDERS		32
+#   define PJSUA_MAX_RECORDERS		100000
 #endif
 
 
