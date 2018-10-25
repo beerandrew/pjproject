@@ -984,10 +984,10 @@ void *send_thread_func(void *vargp) {
 			int limit = strlen(pi->user_input_list[k])/7 + 7;
 			strcpy(tempa, transcription);
 			// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
-			if (strlen(pi->user_input_list[k]) < strlen(transcription)) {
-				strcpy(tempa, transcription + strlen(transcription) - strlen(pi->user_input_list[k]));
-				printf("TRimmed: %s\n", tempa);
-			}
+			// if (strlen(pi->user_input_list[k]) < strlen(transcription)) {
+			// 	strcpy(tempa, transcription + strlen(transcription) - strlen(pi->user_input_list[k]));
+			// 	printf("TRimmed: %s\n", tempa);
+			// }
 			int difference = getDifference(pi->user_input_list[k], tempa);
 			// printf("<<**>> difference %d %d\n", difference, limit);
 
