@@ -986,6 +986,7 @@ void *send_thread_func(void *vargp) {
 		struct profile_info *pi = this_call_info->pi;
 		int k;
 		for (k = this_call_info->prv_ran_cmd_id + 1; k < pi->number_commands; k ++) {
+			if (strcmp(pi->cmd[k][0], "EXT") == 0) continue;
 			int limit = strlen(pi->user_input_list[k])/7 + 7;
 			strcpy(tempa, transcription);
 			// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
