@@ -118,8 +118,8 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
 void *send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	this_call_info->sending = 1;
-	this_call_info->shouldSendStop = 1;
+	// this_call_info->sending = 1;
+	// this_call_info->shouldSendStop = 1;
 	PJ_LOG(1, (THIS_FILE, "Call %d: Dial %s\n", this_call_info->call_id, dial_number));
 	call_play_digit(this_call_info->call_id, dial_number);
 }
@@ -1387,9 +1387,6 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
 	pj_str_t pdigits = pj_str(digits);
 	pjsua_call_dial_dtmf(call_id, &pdigits);
 	return;
-
-	this_call_info->sending = 1;
-	this_call_info->shouldSendStop = 1;
 
   pjmedia_tone_digit d[16];
   unsigned i, count = strlen(digits);
