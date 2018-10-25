@@ -1384,6 +1384,13 @@ struct call_dtmf_data *call_init_tonegen(pjsua_call_id call_id)
 
 void call_play_digit(pjsua_call_id call_id, const char *digits)
 {
+	pj_str_t pdigits = pj_str(digits);
+	pjsua_call_dial_dtmf(call_id, &pdigits);
+	return;
+
+	this_call_info->sending = 1;
+	this_call_info->shouldSendStop = 1;
+
   pjmedia_tone_digit d[16];
   unsigned i, count = strlen(digits);
   struct call_dtmf_data *cd;
