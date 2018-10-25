@@ -130,7 +130,7 @@ void on_speak_command(char *to_speak, pjsua_call_id call_id) {
 	char wavfile[200];
     sprintf(wavfile, "%s.wav", to_speak);
 
-	if( access( fname, F_OK ) == -1 ) {
+	if( access( wavfile, F_OK ) == -1 ) {
 		download_wav(to_speak);
 	}
 
