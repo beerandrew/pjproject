@@ -928,6 +928,11 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		// There was an error connecting to the server
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] There was a connection error: %s\n", call_id, in ? (char*)in : "(no error information)"));
+		if (this_call_info != NULL) {
+			pjsua_call_info ci;
+			pjsua_call_get_info(call_id, &ci);
+			call_hangup_retry(call_id, &ci);
+		}
 		break;
 	default:
 		break;
