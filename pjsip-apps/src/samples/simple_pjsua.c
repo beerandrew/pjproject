@@ -790,7 +790,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 				strcat(this_call_info->wsData, in);
 			}
 
-			// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
+			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
 			
 			// Parse JSON
 			json_char* json;
