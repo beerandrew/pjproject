@@ -1675,6 +1675,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 					return;
 				}
 			} else if (n_profile_lines % 3 == 1) {
+				new_line[strcspn(new_line, "\n")] = 0;
 				strcpy(pi->user_input_list[pi->number_commands], new_line);
 			} else if (n_profile_lines %3 == 2) {
 				char *new_args[sizeof new_line];
