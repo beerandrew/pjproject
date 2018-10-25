@@ -118,8 +118,8 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
 void *send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
-	// this_call_info->sending = 1;
-	// this_call_info->shouldSendStop = 1;
+	this_call_info->sending = 1;
+	this_call_info->shouldSendStop = 1;
 	PJ_LOG(1, (THIS_FILE, "Call %d: Dial %s\n", this_call_info->call_id, dial_number));
 	call_play_digit(this_call_info->call_id, dial_number);
 }
@@ -1384,10 +1384,6 @@ struct call_dtmf_data *call_init_tonegen(pjsua_call_id call_id)
 
 void call_play_digit(pjsua_call_id call_id, const char *digits)
 {
-	pj_str_t pdigits = pj_str(digits);
-	pjsua_call_dial_dtmf(call_id, &pdigits);
-	return;
-
   pjmedia_tone_digit d[16];
   unsigned i, count = strlen(digits);
   struct call_dtmf_data *cd;
@@ -1403,9 +1399,9 @@ void call_play_digit(pjsua_call_id call_id, const char *digits)
   pj_bzero(d, sizeof(d));
   for (i=0; i<count; ++i) {
     d[i].digit = digits[i];
-    d[i].on_msec = 300;
-    d[i].off_msec = 500;
-    d[i].volume = 0;
+    d[i].on_msec = 100;
+    d[i].off_msec = 100;
+    d[i].volume = 16383;
   }
 	PJ_LOG(1, (THIS_FILE, "--------sending dtmf\n-"));
   pjmedia_tonegen_play_digits(cd->tonegen, count, d, 0);
