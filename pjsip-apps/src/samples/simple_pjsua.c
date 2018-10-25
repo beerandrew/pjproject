@@ -991,7 +991,7 @@ void *send_thread_func(void *vargp) {
 			int difference = getDifference(pi->user_input_list[k], tempa);
 			// printf("<<**>> difference %d %d\n", difference, limit);
 
-			if(difference < limit) {
+			if(difference < limit || strstr(tempa, pi->user_input_list[k]) != NULL) {
 				// printf("going to show 0x%x <<------>> 0x%x <<>--------> 0x%x\n", this_call_info, pi, transcription );
 				// printf("%d) found similar setences, \"%s\" and \"%s\"\n", this_call_info->ci, pi->user_input_list[k], transcription);
 
