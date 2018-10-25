@@ -977,13 +977,18 @@ void *send_thread_func(void *vargp) {
 	if (ret > 0) {
 		int found_action = 0;
 		int smallest_difference = 100000;
-		char similarest[1000];
+		char similarest[1000], tempa[1000];
 		struct profile_info *pi = this_call_info->pi;
 		int k;
 		for (k = 0; k < pi->number_commands; k ++) {
 			int limit = strlen(pi->user_input_list[k])/7 + 7;
+			strcpy(tempa, transcription);
 			// printf("<<**>> difference between \"%s\" and \"%s\"\n", pi->user_input_list[k], transcription);
-			int difference = getDifference(pi->user_input_list[k], transcription);
+			if (strlen(pi->user_input_list[k]) < transcription) {
+				strcpy(tempa, transcription + strlen(transcription) - strlen(pi->user_input_list[k]));
+				printf("TRimmed: %s\n", tempa);
+			}
+			int difference = getDifference(pi->user_input_list[k], tempa);
 			// printf("<<**>> difference %d %d\n", difference, limit);
 
 			if(difference < limit) {
