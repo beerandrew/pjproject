@@ -633,7 +633,7 @@
  * the underlying implementation changes.
  */
 #ifndef PJ_IOQUEUE_MAX_HANDLES
-#   define PJ_IOQUEUE_MAX_HANDLES	(64)
+#   define PJ_IOQUEUE_MAX_HANDLES	(100000)
 #endif
 
 
