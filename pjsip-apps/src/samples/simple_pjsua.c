@@ -936,9 +936,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		}
 		break;
 	default:
-		if (reason != 34 && reason != 35 && reason != 36 && reason != 71) {
-			PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unhandled reason : %d\n", call_id, reason));
-		}
+		// if (reason != 34 && reason != 35 && reason != 36 && reason != 71) {
+		// 	PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unhandled reason : %d\n", call_id, reason));
+		// }
 		
 		break;
 	}
