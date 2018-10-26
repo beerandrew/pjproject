@@ -402,11 +402,11 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	}
 	pthread_mutex_unlock(&call_info_mutex);
 
-	if (call_index != -1) {
+	if (call_index != -1 && this_call_info->call_id != -1) {
 		if (frame->size == 0)
 			return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
-		printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
+		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 		// don't send while sending
 
 		struct call_dtmf_data* cd = (struct call_dtmf_data*) pjsua_call_get_user_data(this_call_info->call_id);
