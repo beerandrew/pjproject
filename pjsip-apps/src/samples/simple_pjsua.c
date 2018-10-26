@@ -935,6 +935,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		}
 		break;
 	default:
+		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unhandled reason : %d\n", call_id, reason));
 		break;
 	}
 
