@@ -295,19 +295,20 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_set_cb( pjmedia_port *port,
  */
 static pj_status_t flush_buffer(struct file_port *fport)
 {
-    pj_ssize_t bytes = fport->writepos - fport->buf;
-    pj_status_t status;
+    // pj_ssize_t bytes = fport->writepos - fport->buf;
+    // pj_status_t status;
 
-    /* Convert samples to little endian */
-    swap_samples((pj_int16_t*)fport->buf, bytes/fport->bytes_per_sample);
+    // /* Convert samples to little endian */
+    // swap_samples((pj_int16_t*)fport->buf, bytes/fport->bytes_per_sample);
 
-    /* Write to file. */
-    status = pj_file_write(fport->fd, fport->buf, &bytes);
+    // /* Write to file. */
+    // status = pj_file_write(fport->fd, fport->buf, &bytes);
 
     /* Reset writepos */
     fport->writepos = fport->buf;
 
-    return status;
+    // return status;
+    return PJ_SUCCESS;
 }
 
 /*
