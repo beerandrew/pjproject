@@ -1035,6 +1035,15 @@ PJ_DEF(pj_status_t) pjmedia_conf_disconnect_port( pjmedia_conf *conf,
     struct conf_port *src_port, *dst_port;
     unsigned i;
 
+	if (conf && src_slot<conf->max_ports && 
+		     sink_slot<conf->max_ports) {
+				 PJ_LOG(4,(THIS_FILE, "-------------------------------------"));
+				 if (conf == NULL) {
+					 PJ_LOG(4,(THIS_FILE, "--------------------CONF NULL-----------------"));
+				 }
+				 PJ_LOG(4,(THIS_FILE, "%d<%d %d<%d", src_slot, conf->max_ports, sink_slot, conf->max_ports));
+			 }
+
     /* Check arguments */
     PJ_ASSERT_RETURN(conf && src_slot<conf->max_ports && 
 		     sink_slot<conf->max_ports, PJ_EINVAL);
