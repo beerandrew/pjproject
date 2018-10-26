@@ -1518,7 +1518,7 @@ void *process_call(void *vargp) {
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
 
-			strcpy(newCall->callerId, thread_param.callerId);
+			strcpy(newCall->callerId, call->callerId);
 
 			pthread_mutex_lock(&call_info_mutex);
 
