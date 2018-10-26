@@ -45,6 +45,7 @@ struct profile_info {
 	char cmd[100][10][100];
 	int thread_cnt;
 	int finished_thread_cnt;
+	struct call_to_profile_with_number **call_queue;
 };
 
 char binary_buf[1000000];
@@ -320,15 +321,15 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	} else if(this_call_info->isProfileI == 0) {
 		if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
 			PJ_LOG(1, (THIS_FILE, "<<**>> restarting call since unexpected transcription received\n"));
+			
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
-			pthread_t make_profile_call_thread_id;
+			// pthread_t make_profile_call_thread_id;
 			thread_param->pi = pi;
 			thread_param->number = this_call_info->ci;
 			thread_param->tried_cnt = this_call_info->tried_cnt + 1;
 			strcpy(thread_param->callerId, this_call_info->callerId);
 
-			PJ_LOG(1, (THIS_FILE, ">>> redo call since did not get result %d\n", this_call_info->ci));
-			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
+			vector_push_back(pi->call_queue, thread_param);
 		} else {
 			PJ_LOG(1, (THIS_FILE, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT));
 
@@ -1489,6 +1490,72 @@ void save_user_responses() {
 	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses ended"));
 }
 
+void *process_call(void *vargp) {
+	pj_status_t status;
+	pj_thread_desc aPJThreadDesc;
+	if (!pj_thread_is_registered()) {
+		pj_thread_t *pjThread;
+		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
+		if (status != PJ_SUCCESS) {
+		}
+	}
+	
+	while (1) {
+		int size = vector_size(current_profile_info.call_queue);
+		if (size > 0) {
+			PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
+			struct call_to_profile_with_number* call = current_profile_info.call_queue[size - 1];
+			vector_pop_back(current_profile_info.call_queue);
+
+			struct profile_info *pi = call->pi;
+			int number = call->number;
+			int tried_cnt= call->tried_cnt;
+			
+			char contact[200];
+			sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
+			PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
+			
+			struct call_info *newCall = malloc( sizeof(struct call_info) );
+			init_call_info(newCall);
+
+			strcpy(newCall->callerId, thread_param.callerId);
+
+			pthread_mutex_lock(&call_info_mutex);
+
+			vector_push_back(current_calls, newCall);
+			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
+
+			pthread_mutex_unlock(&call_info_mutex);
+
+			this_call_info->pi = pi;
+			this_call_info->ci = number;
+			this_call_info->tried_cnt = tried_cnt;
+			// Create recognition thread
+			pthread_create(&this_call_info->ws_thread_id, NULL, create_websocket,(void *) (this_call_info));
+
+			pj_str_t uri = pj_str(contact);
+
+			// Custom header
+			pjsua_msg_data msg_data_;
+			pjsip_generic_string_hdr warn;
+			pj_str_t hname = pj_str("Custom");
+			pj_str_t hvalue = pj_str(thread_param.callerId);
+			pjsua_msg_data_init(&msg_data_);
+			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
+			pj_list_push_back(&msg_data_.hdr_list, &warn);
+
+			status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
+			if (status != PJ_SUCCESS)
+				error_exit("Error making call", status);
+			
+			free(call);
+		}
+		sleep(2);
+	}
+	
+	return NULL;
+}
+
 void *make_call_to_profile(void *vargp) {
 	sleep(2);
 	pj_status_t status;
@@ -1748,15 +1815,15 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 				strcpy(new_line, "18008008000");
 			new_line[strcspn(new_line, "\n")] = 0;
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
-			pthread_t make_profile_call_thread_id;
+			// pthread_t make_profile_call_thread_id;
 			thread_param->pi = pi;
 			thread_param->number = j;
 			thread_param->tried_cnt = 0;
 			strcpy(thread_param->callerId, new_line);
 
-			PJ_LOG(1, (THIS_FILE, ">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt));
-			pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
-			sleep(2);
+			vector_push_back(pi->call_queue, thread_param);
+			// PJ_LOG(1, (THIS_FILE, ">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt));
+			// pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
 		}
 		fclose(fp);
 	} else if(current_profile_name) {
@@ -1890,6 +1957,11 @@ int main(int argc, char *argv[])
 		status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
 		if (status != PJ_SUCCESS) error_exit("Error adding account", status);
     }
+
+	memset(&current_profile_info, 0, sizeof(profile_info));
+
+	pthread_t process_call_thread_id;
+	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
 
 	char option[1000];
     /* Wait until user press "q" to quit. */
