@@ -1539,7 +1539,7 @@ void *process_call(void *vargp) {
 			pjsua_msg_data msg_data_;
 			pjsip_generic_string_hdr warn;
 			pj_str_t hname = pj_str("Custom");
-			pj_str_t hvalue = pj_str(thread_param.callerId);
+			pj_str_t hvalue = pj_str(call->callerId);
 			pjsua_msg_data_init(&msg_data_);
 			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
 			pj_list_push_back(&msg_data_.hdr_list, &warn);
