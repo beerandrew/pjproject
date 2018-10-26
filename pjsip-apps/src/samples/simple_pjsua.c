@@ -20,7 +20,7 @@
 #define SIP_USER	"1111"
 #define SIP_PASSWD	"QAb+yyt6MnjiqMrS7xy3"
 #define WAV_FILE	"auddemo.wav"
-#define MAX_TRY_CNT 10
+#define MAX_TRY_CNT 3
 
 char* str_copy(char *str) {
 	char *copied = malloc(sizeof(char)*(strlen(str)+1));
@@ -332,15 +332,15 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 		} else {
 			PJ_LOG(1, (THIS_FILE, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT));
 
-			// pthread_mutex_lock(&write_ext_mutex);
+			pthread_mutex_lock(&write_ext_mutex);
 
-			// FILE *fp = fopen ("err.res", "a"); 
+			FILE *fp = fopen ("err.txt", "a"); 
 			// printf("<err start>--------------<err start>\n");
 			// printf("<start ci=%d>--------------<start>\n", this_call_info->ci);
-			// fprintf(fp, "<start ci=%d>--------------<start>\n", this_call_info->ci);
+			fprintf(fp, "%d\n", this_call_info->ci);
 			// fprintf(fp, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
 			// fprintf(fp, "<end>--------------<end>\n");
-			// fclose(fp);
+			fclose(fp);
 
 			// pthread_mutex_unlock(&write_ext_mutex);
 
@@ -803,7 +803,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			value = json_parse(json,json_size);
 
 			if (value == NULL) {
-				PJ_LOG(1, (THIS_FILE, "Unable to parse data\n"));
+				PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unable to parse data\n", call_id));
 				break;
 			}
 			this_call_info->wsData[0] = '\0';
