@@ -1958,7 +1958,7 @@ int main(int argc, char *argv[])
 		if (status != PJ_SUCCESS) error_exit("Error adding account", status);
     }
 
-	memset(&current_profile_info, 0, sizeof(profile_info));
+	memset(&current_profile_info, 0, sizeof(struct profile_info));
 
 	pthread_t process_call_thread_id;
 	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
