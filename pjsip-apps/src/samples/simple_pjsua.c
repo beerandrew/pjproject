@@ -406,7 +406,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		if (frame->size == 0)
 			return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
-		// printf("<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
+		PJ_LOG(1, (THIS_FILE, "<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id));
 		// don't send while sending
 
 		struct call_dtmf_data* cd = (struct call_dtmf_data*) pjsua_call_get_user_data(this_call_info->call_id);
