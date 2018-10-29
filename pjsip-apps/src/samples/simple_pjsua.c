@@ -392,7 +392,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	}
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
-	// printf("<<**>> on_putframe started\n");
+	printf("<<**>> on_putframe started\n");
 
 	struct call_info *this_call_info;
 	int call_index;
