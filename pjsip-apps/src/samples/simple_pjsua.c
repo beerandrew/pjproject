@@ -392,7 +392,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	}
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
-	printf("<<**>> on_putframe started\n");
+	// // printf("<<**>> on_putframe started\n");
 
 	struct call_info *this_call_info;
 	int call_index;
@@ -401,7 +401,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-pthread_mutex_unlock(&call_info_mutex);
+
 	if (call_index != -1 && this_call_info->call_id != -1) {
 		// if (frame->size == 0)
 		// 	return 0;
@@ -461,9 +461,9 @@ void *recorder_thread_func(void *param) {
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
+	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index == -1) {
-		pthread_mutex_unlock(&call_info_mutex);
 		return NULL;
 	}
 
@@ -513,7 +513,7 @@ void *recorder_thread_func(void *param) {
 	// rec_slot = PJSUA_INVALID_ID;
 	// pjsua_recorder_destroy(rec_id);
 	// rec_id = PJSUA_INVALID_ID;
-	pthread_mutex_unlock(&call_info_mutex);
+
 	return NULL;
 on_return:
 	if (rec_slot != PJSUA_INVALID_ID)
@@ -522,7 +522,6 @@ on_return:
 	pjsua_recorder_destroy(rec_id);
 	PJ_LOG(1, (THIS_FILE, "<<**>> unexpected on_return destroy rec_id"));
 	PJ_LOG(1, (THIS_FILE, "<<**>> recorder_thread_func ended"));
-	pthread_mutex_unlock(&call_info_mutex);
     return NULL;
 }
 
@@ -1455,9 +1454,9 @@ void store_response(char *response) {
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
+	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index == -1) {
-		pthread_mutex_unlock(&call_info_mutex);
 		PJ_LOG(1, (THIS_FILE, "call_index == 0 and returning\n"));
 		return;
 	}
@@ -1470,7 +1469,6 @@ void store_response(char *response) {
 	this_call_info->transcription[0] = '\0';
 	user_input_cnt ++;
 	PJ_LOG(1, (THIS_FILE, "<<**>> store_response ended"));
-	pthread_mutex_unlock(&call_info_mutex);
 }
 void save_user_responses() {
 	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses started"));
@@ -1518,7 +1516,7 @@ void *process_call(void *vargp) {
 			
 			char contact[200];
 			sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
-			// PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
+			PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
 			
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
