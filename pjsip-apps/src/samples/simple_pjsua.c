@@ -401,6 +401,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
+	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index != -1 && this_call_info->call_id != -1) {
 		// if (frame->size == 0)
@@ -420,7 +421,6 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		}
 		
 		if (this_call_info->sending) {
-			pthread_mutex_unlock(&call_info_mutex);
 			return 0;
 		}
 		pthread_mutex_lock(&this_call_info->ws_buf_mutex);
@@ -445,7 +445,6 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
 	
-	pthread_mutex_unlock(&call_info_mutex);
 	return 0;
 	// printf("<<**>> on_putframe ended\n");
 }
