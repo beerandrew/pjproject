@@ -311,7 +311,7 @@ static pj_status_t flush_buffer(struct file_port *fport)
         frame.size = bytes;
         frame.buf = fport->buf;
 
-        status = (*cb2)(fport, frame, fport->file_id);
+        status = (*cb2)(fport, &frame, fport->file_id);
         // if (status != PJ_SUCCESS)
         //     return status;
         // }
