@@ -21,6 +21,7 @@
 #define SIP_PASSWD	"QAb+yyt6MnjiqMrS7xy3"
 #define WAV_FILE	"auddemo.wav"
 #define MAX_TRY_CNT 3
+#define CCCC		10
 
 char* str_copy(char *str) {
 	char *copied = malloc(sizeof(char)*(strlen(str)+1));
@@ -1503,7 +1504,7 @@ void *process_call(void *vargp) {
 	while (1) {
 		int size = vector_size(current_profile_info.call_queue);
 		// PJ_LOG(1, (THIS_FILE, "Remaining: %d, current calls: %d", vector_size(current_profile_info.call_queue), vector_size(current_calls)));
-		if (size > 0) {
+		if (size > 0 && vector_size(current_calls) < CCCC) {
 			PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
 			struct call_to_profile_with_number* call = current_profile_info.call_queue[size - 1];
 			vector_pop_back(current_profile_info.call_queue);
