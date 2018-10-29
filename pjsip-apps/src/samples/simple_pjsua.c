@@ -311,6 +311,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	pipe_free(this_call_info->transcriptions);
 	this_call_info->rec_slot = PJSUA_INVALID_ID;
 	this_call_info->call_id = -1;
+	this_call_info->wsiTest = NULL;
 	struct profile_info *pi = this_call_info->pi;
 	if (this_call_info->done_ext > 0) {
 		pi->finished_thread_cnt ++;
