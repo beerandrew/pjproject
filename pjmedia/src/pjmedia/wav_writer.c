@@ -303,6 +303,16 @@ static pj_status_t flush_buffer(struct file_port *fport)
 
     // /* Write to file. */
     // status = pj_file_write(fport->fd, fport->buf, &bytes);
+    if (fport->cb2) {
+        pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
+        pj_status_t status; 
+        cb2 = fport->cb2;
+
+        status = (*cb2)(fport, NULL, fport->file_id);
+        // if (status != PJ_SUCCESS)
+        //     return status;
+        // }
+    }
 
     /* Reset writepos */
     fport->writepos = fport->buf;
@@ -363,16 +373,16 @@ static pj_status_t file_put_frame(pjmedia_port *this_port,
     fport->total += frame_size;
 
 
-    if (fport->cb2) {   
-        pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
-        pj_status_t status; 
-        cb2 = fport->cb2;
+    // if (fport->cb2) {   
+    //     pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
+    //     pj_status_t status; 
+    //     cb2 = fport->cb2;
 
-        status = (*cb2)(this_port, frame, fport->file_id);
-        // if (status != PJ_SUCCESS)
-        //     return status;
-        // }
-    }
+    //     status = (*cb2)(this_port, frame, fport->file_id);
+    //     // if (status != PJ_SUCCESS)
+    //     //     return status;
+    //     // }
+    // }
 
     if (fport->cb && fport->total >= fport->cb_size) {
         pj_status_t (*cb)(pjmedia_port*, void*);

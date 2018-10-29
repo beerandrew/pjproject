@@ -403,8 +403,8 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index != -1 && this_call_info->call_id != -1) {
-		if (frame->size == 0)
-			return 0;
+		file_port *fport = (file_port *)port;
+		pj_ssize_t bytes = fport->writepos - fport->buf;
 		// printf("<<**>> on_putframe call_index != -1\n");
 		PJ_LOG(1, (THIS_FILE, "<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id));
 		// don't send while sending
@@ -425,8 +425,8 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		pthread_mutex_lock(&this_call_info->ws_buf_mutex);
 		 
 		// printf("<<**>> b\n");
-		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, frame->buf, frame->size);
-		this_call_info->bufferSize += frame->size;
+		memcpy(this_call_info->globalBuf + this_call_info->bufferSize, fport->buf, bytes);
+		this_call_info->bufferSize += bytes;
 		// printf("BUF:%d\n", this_call_info->bufferSize);
 		// printf("<<**>> c\n");
 
