@@ -392,7 +392,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	}
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
-	// // printf("<<**>> on_putframe started\n");
+	// printf("<<**>> on_putframe started\n");
 
 	struct call_info *this_call_info;
 	int call_index;
@@ -1518,7 +1518,7 @@ void *process_call(void *vargp) {
 			
 			char contact[200];
 			sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
-			PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
+			// PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
 			
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
