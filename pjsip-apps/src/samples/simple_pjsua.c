@@ -401,7 +401,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-
+pthread_mutex_unlock(&call_info_mutex);
 	if (call_index != -1 && this_call_info->call_id != -1) {
 		// if (frame->size == 0)
 		// 	return 0;
