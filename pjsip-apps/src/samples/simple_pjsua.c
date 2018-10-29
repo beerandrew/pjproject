@@ -289,9 +289,9 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index == -1) {
+		pthread_mutex_unlock(&call_info_mutex);
 		return;
 	}
 
@@ -368,8 +368,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 			// pthread_mutex_unlock(&call_info_mutex);
 		}
 	}
-	pthread_mutex_lock(&call_info_mutex);
-	
+
 	this_call_info->disconnected = 1;
 	vector_erase(current_calls, call_index);
 
@@ -402,11 +401,10 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index != -1 && this_call_info->call_id != -1) {
-		if (frame->size == 0)
-			return 0;
+		// if (frame->size == 0)
+		// 	return 0;
 		// printf("<<**>> on_putframe call_index != -1\n");
 		// PJ_LOG(1, (THIS_FILE, "<<**>> on_putframe  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id));
 		// don't send while sending
@@ -422,6 +420,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		}
 		
 		if (this_call_info->sending) {
+			pthread_mutex_unlock(&call_info_mutex);
 			return 0;
 		}
 		pthread_mutex_lock(&this_call_info->ws_buf_mutex);
@@ -446,6 +445,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
 	
+	pthread_mutex_unlock(&call_info_mutex);
 	return 0;
 	// printf("<<**>> on_putframe ended\n");
 }
@@ -461,9 +461,9 @@ void *recorder_thread_func(void *param) {
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index == -1) {
+		pthread_mutex_unlock(&call_info_mutex);
 		return NULL;
 	}
 
@@ -513,7 +513,7 @@ void *recorder_thread_func(void *param) {
 	// rec_slot = PJSUA_INVALID_ID;
 	// pjsua_recorder_destroy(rec_id);
 	// rec_id = PJSUA_INVALID_ID;
-
+	pthread_mutex_unlock(&call_info_mutex);
 	return NULL;
 on_return:
 	if (rec_slot != PJSUA_INVALID_ID)
@@ -522,6 +522,7 @@ on_return:
 	pjsua_recorder_destroy(rec_id);
 	PJ_LOG(1, (THIS_FILE, "<<**>> unexpected on_return destroy rec_id"));
 	PJ_LOG(1, (THIS_FILE, "<<**>> recorder_thread_func ended"));
+	pthread_mutex_unlock(&call_info_mutex);
     return NULL;
 }
 
@@ -1454,9 +1455,9 @@ void store_response(char *response) {
 	if (call_index != -1) {
 		this_call_info = current_calls[call_index];
 	}
-	pthread_mutex_unlock(&call_info_mutex);
 
 	if (call_index == -1) {
+		pthread_mutex_unlock(&call_info_mutex);
 		PJ_LOG(1, (THIS_FILE, "call_index == 0 and returning\n"));
 		return;
 	}
@@ -1469,6 +1470,7 @@ void store_response(char *response) {
 	this_call_info->transcription[0] = '\0';
 	user_input_cnt ++;
 	PJ_LOG(1, (THIS_FILE, "<<**>> store_response ended"));
+	pthread_mutex_unlock(&call_info_mutex);
 }
 void save_user_responses() {
 	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses started"));
@@ -1526,9 +1528,9 @@ void *process_call(void *vargp) {
 			pthread_mutex_lock(&call_info_mutex);
 
 			vector_push_back(current_calls, newCall);
+			pthread_mutex_unlock(&call_info_mutex);
 			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
 
-			pthread_mutex_unlock(&call_info_mutex);
 
 			this_call_info->pi = pi;
 			this_call_info->ci = number;
