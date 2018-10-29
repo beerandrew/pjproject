@@ -284,6 +284,7 @@ void *make_call_to_profile(void *vargp);
 void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	struct call_info *this_call_info;
 	int call_index;
+	printf("--------lock1--------");
 	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_from_call_id(call_id);
 	if (call_index != -1) {
@@ -291,6 +292,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	}
 
 	if (call_index == -1) {
+		printf("--------unlock1--------");
 		pthread_mutex_unlock(&call_info_mutex);
 		return;
 	}
@@ -371,7 +373,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 
 	this_call_info->disconnected = 1;
 	vector_erase(current_calls, call_index);
-
+	printf("--------unlock11--------");
 	pthread_mutex_unlock(&call_info_mutex);
 }
 
@@ -396,6 +398,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 
 	struct call_info *this_call_info;
 	int call_index;
+	printf("--------lock2--------");
 	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_from_rec_id(rec_id);
 	if (call_index != -1) {
@@ -420,6 +423,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		}
 		
 		if (this_call_info->sending) {
+			printf("--------unlock2--------");
 			pthread_mutex_unlock(&call_info_mutex);
 			return 0;
 		}
@@ -432,6 +436,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		// printf("<<**>> c\n");
 
 		pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
+		printf("--------unlock21--------");
 		pthread_mutex_unlock(&call_info_mutex);
 
 		if (this_call_info->wsiTest != NULL){
@@ -442,6 +447,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
 		}
 	} else {
+		printf("--------unlock22--------");
 		pthread_mutex_unlock(&call_info_mutex);
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
@@ -457,6 +463,7 @@ void *recorder_thread_func(void *param) {
 
 	struct call_info *this_call_info;
 	int call_index;
+	printf("--------lock3--------");
 	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_from_call_id(this_call_id);
 	if (call_index != -1) {
@@ -464,6 +471,7 @@ void *recorder_thread_func(void *param) {
 	}
 
 	if (call_index == -1) {
+		printf("--------unlock3--------");
 		pthread_mutex_unlock(&call_info_mutex);
 		return NULL;
 	}
@@ -514,6 +522,7 @@ void *recorder_thread_func(void *param) {
 	// rec_slot = PJSUA_INVALID_ID;
 	// pjsua_recorder_destroy(rec_id);
 	// rec_id = PJSUA_INVALID_ID;
+	printf("--------unlock31--------");
 	pthread_mutex_unlock(&call_info_mutex);
 	return NULL;
 on_return:
@@ -523,6 +532,7 @@ on_return:
 	pjsua_recorder_destroy(rec_id);
 	PJ_LOG(1, (THIS_FILE, "<<**>> unexpected on_return destroy rec_id"));
 	PJ_LOG(1, (THIS_FILE, "<<**>> recorder_thread_func ended"));
+	printf("--------unlock32--------");
 	pthread_mutex_unlock(&call_info_mutex);
     return NULL;
 }
@@ -742,7 +752,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	
 	struct call_info *this_call_info;
 	int call_index;
-
+printf("--------lock4--------");
 	pthread_mutex_lock(&call_info_mutex);
 
 	call_index = find_index_from_websocket(wsi);
@@ -755,7 +765,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		// printf("<<**>> callback_test  (threadid: %d, call_id: %d)\n", this_call_info->ws_thread_id, this_call_info->call_id);
 	}
 	int call_id = this_call_info != NULL ? this_call_info->call_id : -1;
-
+printf("--------unlock41--------");
 	pthread_mutex_unlock(&call_info_mutex);
 
 	// The message we send back to the echo server
@@ -1239,9 +1249,11 @@ void * create_websocket(void *vargp) {
 	while (!bExit)
 	{
 		if (this_call_info -> disconnected == 1) {
+			printf("--------lock5--------");
 			pthread_mutex_lock(&call_info_mutex);
 			printf("<<**>> do free of this_call_info=%x\n", this_call_info);
 			free(this_call_info);
+			printf("--------unlock51--------");
 			pthread_mutex_unlock(&call_info_mutex);
 			break;
 		}
@@ -1451,6 +1463,7 @@ void store_response(char *response) {
 	PJ_LOG(1, (THIS_FILE, "<<**>> store_response started"));
 	struct call_info *this_call_info;
 	int call_index;
+	printf("--------lock6--------");
 	pthread_mutex_lock(&call_info_mutex);
 	call_index = find_index_profile_insert();
 	if (call_index != -1) {
@@ -1458,6 +1471,7 @@ void store_response(char *response) {
 	}
 
 	if (call_index == -1) {
+		printf("--------unlock6--------");
 		pthread_mutex_unlock(&call_info_mutex);
 		PJ_LOG(1, (THIS_FILE, "call_index == 0 and returning\n"));
 		return;
@@ -1471,6 +1485,7 @@ void store_response(char *response) {
 	this_call_info->transcription[0] = '\0';
 	user_input_cnt ++;
 	PJ_LOG(1, (THIS_FILE, "<<**>> store_response ended"));
+	printf("--------unlock61--------");
 	pthread_mutex_unlock(&call_info_mutex);
 }
 void save_user_responses() {
@@ -1525,10 +1540,11 @@ void *process_call(void *vargp) {
 			init_call_info(newCall);
 
 			strcpy(newCall->callerId, call->callerId);
-
+printf("--------lock7--------");
 			pthread_mutex_lock(&call_info_mutex);
 
 			vector_push_back(current_calls, newCall);
+			printf("--------unlock7--------");
 			pthread_mutex_unlock(&call_info_mutex);
 			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
 
@@ -1589,12 +1605,12 @@ void *make_call_to_profile(void *vargp) {
 	init_call_info(newCall);
 
 	strcpy(newCall->callerId, thread_param.callerId);
-
+printf("--------lock8--------");
 	pthread_mutex_lock(&call_info_mutex);
 
 	vector_push_back(current_calls, newCall);
 	struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
-
+printf("--------unlock8--------");
 	pthread_mutex_unlock(&call_info_mutex);
 
 	this_call_info->pi = pi;
@@ -1686,12 +1702,12 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 			
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
-
+printf("--------lock9--------");
 			pthread_mutex_lock(&call_info_mutex);
 
 			vector_push_back(current_calls, newCall);
 			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
-
+printf("--------unlock9--------");
 			pthread_mutex_unlock(&call_info_mutex);
 
 			this_call_info->isProfileI = 1;
@@ -1835,12 +1851,12 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 	} else if(current_profile_name) {
 
 		struct call_info *this_call_info;
-		int call_index;
+		int call_index;printf("--------lock0--------");
 		pthread_mutex_lock(&call_info_mutex);
 		call_index = find_index_profile_insert();
 		if (call_index != -1) {
 			this_call_info = current_calls[call_index];
-		}
+		}printf("--------unlock0--------");
 		pthread_mutex_unlock(&call_info_mutex);
 
 		if (call_index == -1) {
