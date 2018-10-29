@@ -343,7 +343,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 			// fprintf(fp, "<end>--------------<end>\n");
 			fclose(fp);
 
-			// pthread_mutex_unlock(&write_ext_mutex);
+			pthread_mutex_unlock(&write_ext_mutex);
 
 			// pthread_mutex_lock(&call_info_mutex);
 
