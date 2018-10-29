@@ -775,7 +775,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLOSED:
 	case LWS_CALLBACK_WSI_DESTROY:
 		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Connection closed.\n", call_id));
-		if (this_call_info != NULL) {
+		if (call_id != -1) {
 			pjsua_call_info ci;
 			pjsua_call_get_info(call_id, &ci);
 			call_hangup_retry(call_id, &ci);
