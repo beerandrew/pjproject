@@ -790,100 +790,100 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		{
 			if (call_index != -1) {
 				strcat(this_call_info->wsData, in);
-			}
 
-			// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
-			
-			// Parse JSON
-			json_char* json;
-        	json_value* value;
-        	int json_size = strlen((char*)this_call_info->wsData);
+				// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
+				
+				// Parse JSON
+				json_char* json;
+				json_value* value;
+				int json_size = strlen((char*)this_call_info->wsData);
 
-			json = (json_char*)this_call_info->wsData;
+				json = (json_char*)this_call_info->wsData;
 
-			value = json_parse(json,json_size);
+				value = json_parse(json,json_size);
 
-			if (value == NULL) {
-				PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unable to parse data\n", call_id));
-				break;
-			}
-			this_call_info->wsData[0] = '\0';
-			// process_value(value, 0);
-			if (value->type != json_object) {
-				// printf("----------- results not fetch");
-				break;
-			}
-			json_value *results = value->u.object.values[0].value;
-			if (results->type != json_array) {
-				// printf("----------- first result not fetch");
-				break;
-			}
-			json_value *first_result = results->u.array.values[0];
-			if (first_result->type != json_object) {
-				// prieeentf("----------- is final object not fetch");
-				break;
-			}
-			json_value *first_result_final = first_result->u.object.values[1].value;
-			if (first_result_final->type != json_boolean) {
-				// printf("----------- is final is not boolean");
-				break;
-			}
-			json_value *alternatives = first_result->u.object.values[0].value;
-			if (alternatives->type != json_array) {
-				break;
-			}
-			json_value *firstAlt = alternatives->u.array.values[0];
-			if (firstAlt->type != json_object) {
-				break;
-			}
-			json_value *trans = NULL;
-			for (int k = 0; k < firstAlt->u.object.length; k ++) {
-				if (strcmp(firstAlt->u.object.values[k].name, "transcript") == 0) {
-					trans = firstAlt->u.object.values[k].value;
+				if (value == NULL) {
+					PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unable to parse data\n", call_id));
 					break;
 				}
-			}
-			if (trans) {
-				char *transcription = trans->u.string.ptr;
-				// printf("is_final %s", is_final ? "true" : "false");
-				int is_final = first_result_final->u.boolean;
-				if (is_final) {
-					if (call_index != -1) {
-						
-						// printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
-						PJ_LOG(1, (THIS_FILE, "<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, call_id, transcription));
-						
-						// ignore response while sending dtmf
-						if (this_call_info->sending) {
-							return;
-						}
-
-						if (this_call_info->isProfileI && this_call_info->transcription[0] != '\0') {
-							int ci = user_input_cnt; // current response index
-							strcpy(user_input_list[ci], this_call_info->transcription);
-							strcpy(response_list[ci], "Skip\n");
-							this_call_info->transcription[0] = '\0';
-							user_input_cnt ++;
-						}
-						strcpy(this_call_info->transcription, transcription);
-
-						if(this_call_info->pi) {
-							pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
-							pipe_push(p, transcription, 1);
-							pipe_producer_free(p);
-							pthread_t send_thread_id;
-							pthread_create(&send_thread_id, NULL, send_thread_func, this_call_info);
-						}
-					}
-					// if (strstr(transcription, "other options") != NULL) {
-					// 	// Check if include "other options" and send wav by player
-					// 	vector_push_back(send_queue, "other_options.wav");
-					// }
-					//bExit = 1;
-					// return -1; // Returning -1 causes the client to disconnect from the server
+				this_call_info->wsData[0] = '\0';
+				// process_value(value, 0);
+				if (value->type != json_object) {
+					// printf("----------- results not fetch");
+					break;
 				}
+				json_value *results = value->u.object.values[0].value;
+				if (results->type != json_array) {
+					// printf("----------- first result not fetch");
+					break;
+				}
+				json_value *first_result = results->u.array.values[0];
+				if (first_result->type != json_object) {
+					// prieeentf("----------- is final object not fetch");
+					break;
+				}
+				json_value *first_result_final = first_result->u.object.values[1].value;
+				if (first_result_final->type != json_boolean) {
+					// printf("----------- is final is not boolean");
+					break;
+				}
+				json_value *alternatives = first_result->u.object.values[0].value;
+				if (alternatives->type != json_array) {
+					break;
+				}
+				json_value *firstAlt = alternatives->u.array.values[0];
+				if (firstAlt->type != json_object) {
+					break;
+				}
+				json_value *trans = NULL;
+				for (int k = 0; k < firstAlt->u.object.length; k ++) {
+					if (strcmp(firstAlt->u.object.values[k].name, "transcript") == 0) {
+						trans = firstAlt->u.object.values[k].value;
+						break;
+					}
+				}
+				if (trans) {
+					char *transcription = trans->u.string.ptr;
+					// printf("is_final %s", is_final ? "true" : "false");
+					int is_final = first_result_final->u.boolean;
+					if (is_final) {
+						if (call_index != -1) {
+							
+							// printf("<<**>> callback_test  (this_call_info: 0x%x) \n", this_call_info);
+							PJ_LOG(1, (THIS_FILE, "<<**>> callback_test  (threadid: %d, call_id: %d):%s\n", this_call_info->ws_thread_id, call_id, transcription));
+							
+							// ignore response while sending dtmf
+							if (this_call_info->sending) {
+								return;
+							}
+
+							if (this_call_info->isProfileI && this_call_info->transcription[0] != '\0') {
+								int ci = user_input_cnt; // current response index
+								strcpy(user_input_list[ci], this_call_info->transcription);
+								strcpy(response_list[ci], "Skip\n");
+								this_call_info->transcription[0] = '\0';
+								user_input_cnt ++;
+							}
+							strcpy(this_call_info->transcription, transcription);
+
+							if(this_call_info->pi) {
+								pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
+								pipe_push(p, transcription, 1);
+								pipe_producer_free(p);
+								pthread_t send_thread_id;
+								pthread_create(&send_thread_id, NULL, send_thread_func, this_call_info);
+							}
+						}
+						// if (strstr(transcription, "other options") != NULL) {
+						// 	// Check if include "other options" and send wav by player
+						// 	vector_push_back(send_queue, "other_options.wav");
+						// }
+						//bExit = 1;
+						// return -1; // Returning -1 causes the client to disconnect from the server
+					}
+				}
+				json_value_free(value);
 			}
-			json_value_free(value);
 		}
 			break;
 
