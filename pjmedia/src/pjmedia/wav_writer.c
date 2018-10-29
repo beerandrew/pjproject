@@ -295,7 +295,7 @@ PJ_DEF(pj_status_t) pjmedia_wav_writer_port_set_cb( pjmedia_port *port,
  */
 static pj_status_t flush_buffer(struct file_port *fport)
 {
-    // pj_ssize_t bytes = fport->writepos - fport->buf;
+    pj_ssize_t bytes = fport->writepos - fport->buf;
     // pj_status_t status;
 
     // /* Convert samples to little endian */
@@ -307,8 +307,11 @@ static pj_status_t flush_buffer(struct file_port *fport)
         pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
         pj_status_t status; 
         cb2 = fport->cb2;
+        pjmedia_frame frame;
+        frame.size = bytes;
+        frame.buf = fport->buf;
 
-        status = (*cb2)(fport, NULL, fport->file_id);
+        status = (*cb2)(fport, frame, fport->file_id);
         // if (status != PJ_SUCCESS)
         //     return status;
         // }
