@@ -1206,7 +1206,7 @@ void * create_websocket(void *vargp) {
 	while (!bExit)
 	{
 		if (this_call_info -> disconnected == 1) {
-			if (this_call_info->wsiTest == NULL) {
+			if (this_call_info->wsiTest != NULL) {
 				printf("<<**>> do free of this_call_info=%x\n", this_call_info);
 				free(this_call_info);
 			}
@@ -1492,11 +1492,14 @@ void *process_call(void *vargp) {
 
 			vector_push_back(current_calls, newCall);
 
-			newCall->pi = pi;
-			newCall->ci = number;
-			newCall->tried_cnt = tried_cnt;
+			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
+
+
+			this_call_info->pi = pi;
+			this_call_info->ci = number;
+			this_call_info->tried_cnt = tried_cnt;
 			// Create recognition thread
-			pthread_create(&newCall->ws_thread_id, NULL, create_websocket,(void *) (newCall));
+			pthread_create(&this_call_info->ws_thread_id, NULL, create_websocket,(void *) (this_call_info));
 
 			pj_str_t uri = pj_str(contact);
 
@@ -1509,7 +1512,7 @@ void *process_call(void *vargp) {
 			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
 			pj_list_push_back(&msg_data_.hdr_list, &warn);
 
-			status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &newCall->call_id);
+			status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
 			if (status != PJ_SUCCESS)
 				error_exit("Error making call", status);
 			
