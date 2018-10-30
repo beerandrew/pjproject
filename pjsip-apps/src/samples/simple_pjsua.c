@@ -185,16 +185,6 @@ on_return:
 	PJ_LOG(1, (THIS_FILE, "<<**>> on_speak_command ended"));
 }
 
-int find_index_from_call_info_pointer(struct call_info *to_find) {
-	int i;
-	for(i = 0; i < vector_size(current_calls); i ++) {
-		if (current_calls[i] == to_find) {
-			return i;
-		}
-	}
-	// printf("<<**>> find_index_from_call_id not found by call_id %x\n", to_find);
-	return -1;
-}
 int find_index_from_call_id(pjsua_call_id call_id) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
@@ -216,20 +206,6 @@ int find_index_from_rec_id(unsigned rec_id) {
 	return -1;
 }
 
-int find_index_from_media_port(pjmedia_port* media_port) {
-	int i;
-	for(i = 0; i < vector_size(current_calls); i ++) {
-		pjmedia_port *port;
-		if ( current_calls[i]->rec_id >= 0){
-			pjsua_recorder_get_port(current_calls[i]->rec_id, &port);
-			if (port->info.signature == media_port->info.signature) {
-				return i;
-			}
-		}
-	}
-	// printf("<<**>> find_index_from_media_port not found by media_port %d\n", media_port->info.signature);
-	return -1;
-}
 int find_index_from_websocket(	struct lws *wsiTest) {
 	int i;
 	for(i = 0; i < vector_size(current_calls); i ++) {
@@ -766,10 +742,10 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLOSED:
 	case LWS_CALLBACK_WSI_DESTROY:
 		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Connection closed.\n", call_id));
-		if (call_id != -1) {
+		if (this_call_info != NULL) {
 			pjsua_call_info ci;
-			pjsua_call_get_info(call_id, &ci);
-			call_hangup_retry(call_id, &ci);
+			pjsua_call_get_info(this_call_info->call_id, &ci);
+			call_hangup_retry(this_call_info->call_id, &ci);
 		}
 
 		break;
@@ -780,7 +756,11 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
 			if (call_index != -1) {
-				strcat(this_call_info->wsData, in);
+				if (strlen(this_call_info->wsData) + strlen(in) < sizeof(this_call_info->wsData)) {
+					strcat(this_call_info->wsData, in);
+				} else {
+					break;
+				}
 
 				// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
 				
@@ -923,8 +903,8 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] There was a connection error: %s\n", call_id, in ? (char*)in : "(no error information)"));
 		if (this_call_info != NULL) {
 			pjsua_call_info ci;
-			pjsua_call_get_info(call_id, &ci);
-			call_hangup_retry(call_id, &ci);
+			pjsua_call_get_info(this_call_info->call_id, &ci);
+			call_hangup_retry(this_call_info->call_id, &ci);
 		}
 		break;
 	default:
