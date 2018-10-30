@@ -1161,10 +1161,10 @@ void * create_websocket(void *vargp) {
 	// ctxCreationInfo.extensions = extensions; // Use our extensions list
 	// Create the context with the info
 	printf("%d\n", ctxCreationInfo.options);
-	ctxCreationInfo.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT; // | 
-							//   LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT | 
-							//   LWS_SERVER_OPTION_PEER_CERT_NOT_REQUIRED | 
-							//   LWS_SERVER_OPTION_ALLOW_LISTEN_SHARE;
+	ctxCreationInfo.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT |
+							  LWS_SERVER_OPTION_ALLOW_NON_SSL_ON_SSL_PORT | 
+							  LWS_SERVER_OPTION_PEER_CERT_NOT_REQUIRED | 
+							  LWS_SERVER_OPTION_ALLOW_LISTEN_SHARE;
 	ctx = lws_create_context(&ctxCreationInfo);
 	
 	if (ctx == NULL)
