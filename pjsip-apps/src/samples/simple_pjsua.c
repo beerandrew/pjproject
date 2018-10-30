@@ -1206,7 +1206,7 @@ void * create_websocket(void *vargp) {
 	while (!bExit)
 	{
 		if (this_call_info -> disconnected == 1) {
-			if (this_call_info->wsiTest != NULL) {
+			if (this_call_info->wsiTest == NULL) {
 				printf("<<**>> do free of this_call_info=%x\n", this_call_info);
 				free(this_call_info);
 			}
