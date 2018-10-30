@@ -54,7 +54,6 @@ struct call_info {
 	int disconnected;
 	struct lws *wsiTest; // WebSocket interface
 	pthread_t ws_thread_id;
-	char wsData[2000];
 	char globalBuf[1000000];
 	int bufferSize;
 	// pjmedia_port* media_port;
@@ -248,7 +247,6 @@ void init_call_info(struct call_info *ci) {
 	ci->prv_ran_cmd_id = -1;
 	ci->tried_cnt = 0;
 	pthread_mutex_init ( &ci->ws_buf_mutex, NULL);
-	memset(ci->wsData, 0, 2000);
 }
 
 void on_call_end() {
@@ -543,7 +541,7 @@ static struct lws_protocols protocols[] = {
 		"test-protocol", // Protocol name
 		callback_test,   // Protocol callback
 		0,				 // Data size per session (can be left empty)
-		512,			 // Receive buffer size (can be left empty)
+		2000,			 // Receive buffer size (can be left empty)
 
 	},
 	{ NULL, NULL, 0 } // Always needed at the end
@@ -551,7 +549,6 @@ static struct lws_protocols protocols[] = {
 
 enum protocolList {
 	PROTOCOL_TEST,
-
 	PROTOCOL_LIST_COUNT // Needed
 };
 static void print_depth_shift(int depth)
@@ -756,20 +753,13 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		// printf("callback_test LWS_CALLBACK_CLIENT_RECEIVE.\n");
 		{
 			if (call_index != -1) {
-				if (strlen(this_call_info->wsData) + strlen(in) < sizeof(this_call_info->wsData)) {
-					strcat(this_call_info->wsData, in);
-				} else {
-					break;
-				}
-
-				// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Received data: \"%s\"\n", call_id, this_call_info->wsData));
 				
 				// Parse JSON
 				json_char* json;
 				json_value* value;
-				int json_size = strlen((char*)this_call_info->wsData);
+				int json_size = strlen((char*)in);
 
-				json = (json_char*)this_call_info->wsData;
+				json = (json_char*)in;
 
 				value = json_parse(json,json_size);
 
@@ -777,7 +767,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 					PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Unable to parse data\n", call_id));
 					break;
 				}
-				this_call_info->wsData[0] = '\0';
+				
 				// process_value(value, 0);
 				if (value->type != json_object) {
 					// printf("----------- results not fetch");
@@ -1100,7 +1090,7 @@ void * create_websocket(void *vargp) {
 
 	/* allow whatever auth the server speaks */
 	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-	curl_easy_setopt(hnd, CURLOPT_USERPWD, "53e1e2fc-c18d-44b2-976a-e4394e1ace60:eeKz16cTnSY1");
+	curl_easy_setopt(hnd, CURLOPT_USERPWD, "16079a80-8095-4f27-9261-ff6f9031fe9d:tChEs4oZVHNd");
 
 	/* send all data to this function  */ 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
