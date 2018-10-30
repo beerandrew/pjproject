@@ -1121,7 +1121,7 @@ void * create_websocket(void *vargp) {
 
 	char inputURL[5000];
 	sprintf(inputURL, "wss://stream.watsonplatform.net/speech-to-text/api/v1/recognize?watson-token=%s", chunk.memory);
-
+	printf(inputURL);
 	free(chunk.memory);
 	// strcpy(inputURL, "wss://echo.websocket.org");
 
