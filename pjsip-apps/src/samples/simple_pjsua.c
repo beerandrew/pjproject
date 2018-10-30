@@ -1099,7 +1099,7 @@ void * create_websocket(void *vargp) {
 	curl_easy_setopt(hnd, CURLOPT_URL, "https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api");
 
 	/* allow whatever auth the server speaks */
-	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+	curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_easy_setopt(hnd, CURLOPT_USERPWD, "53e1e2fc-c18d-44b2-976a-e4394e1ace60:eeKz16cTnSY1");
 
 	/* send all data to this function  */ 
