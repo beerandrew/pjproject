@@ -403,13 +403,13 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 
 		pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
 
-		if (this_call_info->wsiTest != NULL){
-			// printf("<<**>> Issue writable c\n");
-			lws_callback_on_writable(this_call_info->wsiTest);
-		}
-		else {
-			// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
-		}
+		// if (this_call_info->wsiTest != NULL){
+		// 	// printf("<<**>> Issue writable c\n");
+		// 	lws_callback_on_writable(this_call_info->wsiTest);
+		// }
+		// else {
+		// 	// printf("disabled lws_callback_on_writable since wsiTest is NULL\n");
+		// }
 	} else {
 		
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
@@ -857,19 +857,22 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		lws_write(wsi, &buf[LWS_PRE], strlen(msg), LWS_WRITE_TEXT);
 
 		// Write the buffer from the LWS_PRE index + 128 (the buffer size)
-
+		lws_callback_on_writable(wsi);
 		break;
 
 		// The server notifies us that we can write data
 	case LWS_CALLBACK_CLIENT_WRITEABLE:
 		// PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] The client is able to write.\n", call_id));
 		if (call_index != -1) {
-			if (this_call_info->bufferSize == 0)
+			if (this_call_info->bufferSize == 0) {
+				lws_callback_on_writable(wsi);
 				break;
+			}
 			if (this_call_info->shouldSendStop) {
 				lws_write(wsi, &stopbuf[LWS_PRE], strlen(stopmsg), LWS_WRITE_TEXT);
 				PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Issue Stop\n", call_id));
 				this_call_info->shouldSendStop = 0;
+				lws_callback_on_writable(wsi);
 				break;
 			}
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE1\n");
@@ -885,6 +888,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 			// printf("Freeing %x...", this_call_info->globalBuf);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE5\n");
 			pthread_mutex_unlock(&this_call_info->ws_buf_mutex);
+			lws_callback_on_writable(wsi);
 		}
 		break;
 
