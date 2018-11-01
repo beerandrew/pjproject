@@ -1859,16 +1859,20 @@ int main(int argc, char *argv[])
     {
 		pjsua_config cfg;
 		pjsua_logging_config log_cfg;
-
+		pjsua_media_config media_cfg;
 		pjsua_config_default(&cfg);
 		cfg.cb.on_call_media_state = &on_call_media_state;
 		cfg.cb.on_call_state = &on_call_state;
 		cfg.max_calls = 1000;
+		cfg.thread_cnt = 20;
 
 		pjsua_logging_config_default(&log_cfg);
 		log_cfg.console_level = 4;
 
-		status = pjsua_init(&cfg, &log_cfg, NULL);
+		pjsua_media_config_default(&media_cfg);
+		media_cfg.thread_cnt = 20;
+
+		status = pjsua_init(&cfg, &log_cfg, &media_cfg);
 		if (status != PJ_SUCCESS) error_exit("Error in pjsua_init()", status);
     }
 
