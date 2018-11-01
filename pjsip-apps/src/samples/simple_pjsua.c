@@ -21,7 +21,7 @@
 #define SIP_PASSWD	"QAb+yyt6MnjiqMrS7xy3"
 #define WAV_FILE	"auddemo.wav"
 #define MAX_TRY_CNT 5
-#define CCCC		10
+#define CCCC		5
 
 char* str_copy(char *str) {
 	char *copied = malloc(sizeof(char)*(strlen(str)+1));
