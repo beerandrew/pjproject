@@ -1240,7 +1240,7 @@ int download_wav(char *sentence)
 	curl_easy_setopt(hnd, CURLOPT_URL, "https://westus.api.cognitive.microsoft.com/sts/v1.0/issueToken");
 
 	struct curl_slist *headers = NULL;
-	headers = curl_slist_append(headers, "Ocp-Apim-Subscription-Key: cd5dac7e9caf4cd8b37bf1b24b5d3542");
+	headers = curl_slist_append(headers, "Ocp-Apim-Subscription-Key: 47e8b1ae22234b6ebd0674262c1afa40");
 	headers = curl_slist_append(headers, "Content-Length: 0");
 	curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
 
