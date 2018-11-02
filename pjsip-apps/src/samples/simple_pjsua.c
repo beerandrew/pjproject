@@ -695,6 +695,7 @@ int getDifference(char *a, char *b)
 // Callback for the test protocol
 static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void *user, void* in, size_t len)
 {
+	pthread_mutex_lock(&ws_mutex);
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
 	if (!pj_thread_is_registered()) {
@@ -739,7 +740,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 	case LWS_CALLBACK_CLOSED:
 	case LWS_CALLBACK_WSI_DESTROY:
 		PJ_LOG(1, (THIS_FILE, "[Test Protocol %d] Connection closed.\n", call_id));
-		if (this_call_info != NULL) {
+		if (call_index != -1) {
 			pjsua_call_info ci;
 			pjsua_call_get_info(this_call_info->call_id, &ci);
 			call_hangup_retry(this_call_info->call_id, &ci);
@@ -908,7 +909,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		
 		break;
 	}
-
+	pthread_mutex_unlock(&ws_mutex);
 	// printf("<<**>> callback_test ended");
 	return 0;
 }
