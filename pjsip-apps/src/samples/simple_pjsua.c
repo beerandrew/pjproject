@@ -365,7 +365,7 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 }
 pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_id) {
 	// printf("<<**>> on_putframe started\n");
-	PJ_LOG(1, (THIS_FILE, "on_putframe started %d", rec_id));
+	// PJ_LOG(1, (THIS_FILE, "on_putframe started %d", rec_id));
 	struct call_info *this_call_info;
 	int call_index;
 	call_index = find_index_from_rec_id(rec_id);
@@ -414,7 +414,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 		
 		// printf("<<**>> on_putframe  (threadid: NULL, call_id: NULL)\n");
 	}
-	PJ_LOG(1, (THIS_FILE, "on_putframe ended %d", rec_id));
+	// PJ_LOG(1, (THIS_FILE, "on_putframe ended %d", rec_id));
 	
 	return 0;
 	// printf("<<**>> on_putframe ended\n");
