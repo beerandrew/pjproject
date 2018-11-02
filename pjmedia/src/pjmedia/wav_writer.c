@@ -305,13 +305,12 @@ static pj_status_t flush_buffer(struct file_port *fport)
     status = pj_file_write(fport->fd, fport->buf, &bytes);
     if (fport->cb2) {
         pj_status_t (*cb2)(pjmedia_port*, pjmedia_frame*, unsigned);
-        pj_status_t status; 
         cb2 = fport->cb2;
         pjmedia_frame frame;
         frame.size = bytes;
         frame.buf = fport->buf;
 
-        status = (*cb2)(fport, &frame, fport->file_id);
+        (*cb2)(fport, &frame, fport->file_id);
         // if (status != PJ_SUCCESS)
         //     return status;
         // }
