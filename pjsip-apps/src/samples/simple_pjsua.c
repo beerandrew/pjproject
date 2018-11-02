@@ -1890,7 +1890,7 @@ int main(int argc, char *argv[])
     status = pjsua_start();
     if (status != PJ_SUCCESS) error_exit("Error starting pjsua", status);
 
-	status = pjsua_set_null_snd_dev();
+	// status = pjsua_set_null_snd_dev();
 	if (status != PJ_SUCCESS) {
 	    return status;
     }
