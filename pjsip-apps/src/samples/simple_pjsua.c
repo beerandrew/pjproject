@@ -1114,8 +1114,6 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void * create_websocket(void *vargp) {
-	printf("------------Lock1\n");
-	pthread_mutex_lock(&ws_mutex);
 	struct call_info *this_call_info = (struct call_info *)vargp;
 
 	// signal(SIGINT, onSigInt);
@@ -1142,8 +1140,6 @@ void * create_websocket(void *vargp) {
 	CURLcode res = curl_easy_perform(hnd);
 
 	if(res != CURLE_OK) {
-		printf("------------UnLock1\n");
-		pthread_mutex_unlock(&ws_mutex);
       	fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
 		return NULL;
@@ -1202,8 +1198,6 @@ void * create_websocket(void *vargp) {
 							//   LWS_SERVER_OPTION_PEER_CERT_NOT_REQUIRED | 
 							//   LWS_SERVER_OPTION_ALLOW_LISTEN_SHARE;
 	ctx = lws_create_context(&ctxCreationInfo);
-	printf("-----------UnLock3\n");
-	pthread_mutex_unlock(&ws_mutex);
 	if (ctx == NULL)
 	{
 		printf("Error creating context\n");
