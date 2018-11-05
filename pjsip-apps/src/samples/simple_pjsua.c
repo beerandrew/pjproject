@@ -727,8 +727,6 @@ int getDifference(char *a, char *b)
 // Callback for the test protocol
 static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void *user, void* in, size_t len)
 {
-	printf("---------------Lock2\n");
-	pthread_mutex_lock(&ws_mutex);
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
 	if (!pj_thread_is_registered()) {
@@ -942,8 +940,6 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		
 		break;
 	}
-	pthread_mutex_unlock(&ws_mutex);
-	printf("-------------UnLock4\n");
 	// printf("<<**>> callback_test ended");
 	return 0;
 }
