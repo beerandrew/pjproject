@@ -1208,6 +1208,8 @@ void * create_websocket(void *vargp) {
 		printf("Error creating context\n");
 		return NULL;
 	}
+	printf("-----------UnLock3\n");
+	pthread_mutex_unlock(&ws_mutex);
 	// LCCSCF_USE_SSL 				= (1 << 0),
 	// LCCSCF_ALLOW_SELFSIGNED			= (1 << 1),
 	// LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK	= (1 << 2),
@@ -1231,8 +1233,7 @@ void * create_websocket(void *vargp) {
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
-	printf("-----------UnLock3\n");
-	pthread_mutex_unlock(&ws_mutex);
+	
 	printf("<<**>> updated wsiTest on create_websocket %X\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
 	{
