@@ -1222,6 +1222,8 @@ void * create_websocket(void *vargp) {
 	clientConnectInfo.origin = clientConnectInfo.address; // Set the conntections origin to the address
 	clientConnectInfo.ietf_version_or_minus_one = -1; // IETF version is -1 (the latest one)
 	static int index = 1;
+	char protocolName[20];
+	sprintf(protocolName, "");
 	clientConnectInfo.protocol = protocols[index].name; // We use our test protocol
 	index %= 5;
 	index += 1;
