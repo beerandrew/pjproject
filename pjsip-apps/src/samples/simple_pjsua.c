@@ -1179,8 +1179,6 @@ void * create_websocket(void *vargp) {
 		printf("Couldn't parse URL\n");
 	}
 
-
-
 	// Fix up the urlPath by adding a / at the beginning, copy the temp path, and add a \0 at the end
 	urlPath[0] = '/';
 	strncpy(urlPath + 1, urlTempPath, sizeof(urlPath) - 2);
@@ -1202,14 +1200,16 @@ void * create_websocket(void *vargp) {
 							//   LWS_SERVER_OPTION_PEER_CERT_NOT_REQUIRED | 
 							//   LWS_SERVER_OPTION_ALLOW_LISTEN_SHARE;
 	ctx = lws_create_context(&ctxCreationInfo);
-	printf("-----------UnLock3\n");
-	pthread_mutex_unlock(&ws_mutex);
+	
 	if (ctx == NULL)
 	{
+		printf("-----------UnLock2\n");
+		pthread_mutex_unlock(&ws_mutex);
 		printf("Error creating context\n");
 		return NULL;
 	}
-	
+	printf("-----------UnLock3\n");
+	pthread_mutex_unlock(&ws_mutex);
 	// LCCSCF_USE_SSL 				= (1 << 0),
 	// LCCSCF_ALLOW_SELFSIGNED			= (1 << 1),
 	// LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK	= (1 << 2),
