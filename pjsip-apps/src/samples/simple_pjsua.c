@@ -1501,6 +1501,7 @@ void *process_call(void *vargp) {
 	
 	while (1) {
 		int size = vector_size(current_profile_info.call_queue);
+		if (size == 0) break;
 		PJ_LOG(1, (THIS_FILE, "Remaining: %d", vector_size(current_profile_info.call_queue)));
 		if (size > 0 && vector_size(current_calls) < CCCC) {
 			// PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
@@ -1550,6 +1551,10 @@ void *process_call(void *vargp) {
 		}
 		sleep(2);
 	}
+
+	pjsua_call_hangup_all();
+	pjsua_destroy();
+	exit(0);
 	
 	return NULL;
 }
@@ -1928,7 +1933,7 @@ int main(int argc, char *argv[])
     status = pjsua_start();
     if (status != PJ_SUCCESS) error_exit("Error starting pjsua", status);
 
-	// status = pjsua_set_null_snd_dev();
+	status = pjsua_set_null_snd_dev();
 	if (status != PJ_SUCCESS) {
 	    return status;
     }
@@ -1953,35 +1958,43 @@ int main(int argc, char *argv[])
 
 	memset(&current_profile_info, 0, sizeof(struct profile_info));
 
-	pthread_t process_call_thread_id;
-	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
+	// pthread_t process_call_thread_id;
+	// pthread_create(&process_call_thread_id, NULL, process_call, NULL);
 
 	char option[1000];
     /* Wait until user press "q" to quit. */
-    for (;;) {
+    // for (;;) {
 
-		puts("To create profile, run");
-		puts("\t Profile -C \"profile_name\" phonenumber phonenumberslist.txt\n\n");
+	// 	puts("To create profile, run");
+	// 	puts("\t Profile -C \"profile_name\" phonenumber phonenumberslist.txt\n\n");
 
-		puts("To provide instructions to the profile, run");
-		puts("\t Profile -I \"profile_name\"\n\n");
+	// 	puts("To provide instructions to the profile, run");
+	// 	puts("\t Profile -I \"profile_name\"\n\n");
 
-		puts("After you finished instructions, run");
-		puts("\t Profile -S \"profile_name\"\n\n");
+	// 	puts("After you finished instructions, run");
+	// 	puts("\t Profile -S \"profile_name\"\n\n");
 
-		if (fgets(option, sizeof(option), stdin) == NULL) {
-			puts("EOF while reading stdin, will quit now..");
-			break;
-		}
-
+	// 	if (fgets(option, sizeof(option), stdin) == NULL) {
+	// 		puts("EOF while reading stdin, will quit now..");
+	// 		break;
+	// 	}
+	strcpy(option, "Run verizon");
 		delimit_by_spaces(option, &acc_id);
 
-		if (option[0] == 'q')
+		pthread_t process_call_thread_id;
+	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
+	for(;;) {
+		if (fgets(option, sizeof(option), stdin) == NULL) {
 			break;
+		}
+	}
 
-		if (option[0] == 'h')
-			pjsua_call_hangup_all();
-    }
+	// 	if (option[0] == 'q')
+	// 		break;
+
+	// 	if (option[0] == 'h')
+	// 		pjsua_call_hangup_all();
+    // }
 
     /* Destroy pjsua */
 	if (!didDestroy) {
