@@ -695,7 +695,6 @@ int getDifference(char *a, char *b)
 // Callback for the test protocol
 static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void *user, void* in, size_t len)
 {
-	printf("Lock2");
 	pthread_mutex_lock(&ws_mutex);
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
@@ -911,7 +910,6 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 		break;
 	}
 	pthread_mutex_unlock(&ws_mutex);
-	printf("UnLock4");
 	// printf("<<**>> callback_test ended");
 	return 0;
 }
@@ -1082,7 +1080,6 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void * create_websocket(void *vargp) {
-	printf("Lock1");
 	pthread_mutex_lock(&ws_mutex);
 	struct call_info *this_call_info = (struct call_info *)vargp;
 
@@ -1110,7 +1107,6 @@ void * create_websocket(void *vargp) {
 	CURLcode res = curl_easy_perform(hnd);
 
 	if(res != CURLE_OK) {
-		printf("UnLock1");
 		pthread_mutex_unlock(&ws_mutex);
       	fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
@@ -1170,7 +1166,6 @@ void * create_websocket(void *vargp) {
 	
 	if (ctx == NULL)
 	{
-		printf("UnLock2");
 		pthread_mutex_unlock(&ws_mutex);
 		printf("Error creating context\n");
 		return NULL;
@@ -1195,7 +1190,6 @@ void * create_websocket(void *vargp) {
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
-	printf("UnLock3");
 	pthread_mutex_unlock(&ws_mutex);
 	printf("<<**>> updated wsiTest on create_websocket %X\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
