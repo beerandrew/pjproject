@@ -538,35 +538,7 @@ static void onSigInt(int sig)
 
 static struct lws_protocols protocols[] = {
 	{
-		"test-protocol1", // Protocol name
-		callback_test,   // Protocol callback
-		0,				 // Data size per session (can be left empty)
-		2000,			 // Receive buffer size (can be left empty)
-
-	},
-	{
-		"test-protocol2", // Protocol name
-		callback_test,   // Protocol callback
-		0,				 // Data size per session (can be left empty)
-		2000,			 // Receive buffer size (can be left empty)
-
-	},
-	{
-		"test-protocol3", // Protocol name
-		callback_test,   // Protocol callback
-		0,				 // Data size per session (can be left empty)
-		2000,			 // Receive buffer size (can be left empty)
-
-	},
-	{
-		"test-protocol4", // Protocol name
-		callback_test,   // Protocol callback
-		0,				 // Data size per session (can be left empty)
-		2000,			 // Receive buffer size (can be left empty)
-
-	},
-	{
-		"test-protocol5", // Protocol name
+		"test-protocol", // Protocol name
 		callback_test,   // Protocol callback
 		0,				 // Data size per session (can be left empty)
 		2000,			 // Receive buffer size (can be left empty)
@@ -576,11 +548,7 @@ static struct lws_protocols protocols[] = {
 };
 
 enum protocolList {
-	PROTOCOL_TEST1,
-	PROTOCOL_TEST2,
-	PROTOCOL_TEST3,
-	PROTOCOL_TEST4,
-	PROTOCOL_TEST5,
+	PROTOCOL_TEST,
 	PROTOCOL_LIST_COUNT // Needed
 };
 static void print_depth_shift(int depth)
@@ -1189,7 +1157,6 @@ void * create_websocket(void *vargp) {
 	// Set up the context creation info
 	ctxCreationInfo.port = CONTEXT_PORT_NO_LISTEN; // We don't want this client to listen
 	ctxCreationInfo.protocols = protocols; // Use our protocol list
-
 	ctxCreationInfo.gid = -1; // Set the gid and uid to -1, isn't used much
 	ctxCreationInfo.uid = -1;
 	// ctxCreationInfo.extensions = extensions; // Use our extensions list
@@ -1221,12 +1188,7 @@ void * create_websocket(void *vargp) {
 	clientConnectInfo.host = clientConnectInfo.address; // Set the connections host to the address
 	clientConnectInfo.origin = clientConnectInfo.address; // Set the conntections origin to the address
 	clientConnectInfo.ietf_version_or_minus_one = -1; // IETF version is -1 (the latest one)
-	static int index = 1;
-	char protocolName[20];
-	sprintf(protocolName, "");
-	clientConnectInfo.protocol = protocols[index].name; // We use our test protocol
-	index %= 5;
-	index += 1;
+	clientConnectInfo.protocol = protocols[PROTOCOL_TEST].name; // We use our test protocol
 	clientConnectInfo.pwsi = &this_call_info->wsiTest; // The created client should be fed inside the wsi_test variable
 
 	// printf("Connecting to %s://%s:%d%s \n\n", urlProtocol, clientConnectInfo.address, clientConnectInfo.port, urlPath);
