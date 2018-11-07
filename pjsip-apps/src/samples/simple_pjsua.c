@@ -294,7 +294,7 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 		// 	printf("<<**>>Currently finished %d in total %d\n", pi->finished_thread_cnt, pi->thread_cnt);
 		// }
 	} else if(this_call_info->isProfileI == 0) {
-		if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
+		// if (this_call_info->tried_cnt < MAX_TRY_CNT - 1) {
 			PJ_LOG(1, (THIS_FILE, "<<**>> restarting call since unexpected transcription received\n"));
 			
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
@@ -305,41 +305,41 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 			strcpy(thread_param->callerId, this_call_info->callerId);
 
 			vector_push_back(pi->call_queue, thread_param);
-		} else {
-			PJ_LOG(1, (THIS_FILE, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT));
+		// } else {
+		// 	PJ_LOG(1, (THIS_FILE, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT));
 
-			pthread_mutex_lock(&write_ext_mutex);
+		// 	pthread_mutex_lock(&write_ext_mutex);
 
-			FILE *fp = fopen ("err.txt", "a"); 
-			// printf("<err start>--------------<err start>\n");
-			// printf("<start ci=%d>--------------<start>\n", this_call_info->ci);
-			fprintf(fp, "%d\n", this_call_info->ci);
-			// fprintf(fp, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
-			// fprintf(fp, "<end>--------------<end>\n");
-			fclose(fp);
+		// 	FILE *fp = fopen ("err.txt", "a"); 
+		// 	// printf("<err start>--------------<err start>\n");
+		// 	// printf("<start ci=%d>--------------<start>\n", this_call_info->ci);
+		// 	fprintf(fp, "%d\n", this_call_info->ci);
+		// 	// fprintf(fp, "<<**>> tried max_cnt=%d, but did not get result :(\n", MAX_TRY_CNT);
+		// 	// fprintf(fp, "<end>--------------<end>\n");
+		// 	fclose(fp);
 
-			pthread_mutex_unlock(&write_ext_mutex);
+		// 	pthread_mutex_unlock(&write_ext_mutex);
 
-			// pthread_mutex_lock(&call_info_mutex);
+		// 	// pthread_mutex_lock(&call_info_mutex);
 
-			// pi->finished_thread_cnt ++;
-			// if (pi->finished_thread_cnt == pi->thread_cnt) {
-			// 	printf("<<**>> do free of profile_info in error thread\n");
-			// 	free(pi->phone);
-			// 	free(pi->name);
-			// 	int x = 0, y = 0;
-			// 	for (x = 0; x < pi->number_commands; x ++) {
-			// 		for (y = 0; y < pi->cmdLen[x]; y ++) {
-			// 			free(pi->cmd[x][y]);
-			// 		}
-			// 		free(pi->cmd[x]);
-			// 	}
-			// } else {
-			// 	printf("<<**>>Currently finished %d in total %d  in error thread\n", pi->finished_thread_cnt, pi->thread_cnt);
-			// }
+		// 	// pi->finished_thread_cnt ++;
+		// 	// if (pi->finished_thread_cnt == pi->thread_cnt) {
+		// 	// 	printf("<<**>> do free of profile_info in error thread\n");
+		// 	// 	free(pi->phone);
+		// 	// 	free(pi->name);
+		// 	// 	int x = 0, y = 0;
+		// 	// 	for (x = 0; x < pi->number_commands; x ++) {
+		// 	// 		for (y = 0; y < pi->cmdLen[x]; y ++) {
+		// 	// 			free(pi->cmd[x][y]);
+		// 	// 		}
+		// 	// 		free(pi->cmd[x]);
+		// 	// 	}
+		// 	// } else {
+		// 	// 	printf("<<**>>Currently finished %d in total %d  in error thread\n", pi->finished_thread_cnt, pi->thread_cnt);
+		// 	// }
 
-			// pthread_mutex_unlock(&call_info_mutex);
-		}
+		// 	// pthread_mutex_unlock(&call_info_mutex);
+		// }
 	}
 
 	this_call_info->disconnected = 1;
