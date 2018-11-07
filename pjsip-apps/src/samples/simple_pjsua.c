@@ -1953,10 +1953,11 @@ int main(int argc, char *argv[])
 		if (fgets(option, sizeof(option), stdin) == NULL) {
 			break;
 		}
+			if (option[0] == 'q')
+			break;
 	}
 
-	// 	if (option[0] == 'q')
-	// 		break;
+	
 
 	// 	if (option[0] == 'h')
 	// 		pjsua_call_hangup_all();
