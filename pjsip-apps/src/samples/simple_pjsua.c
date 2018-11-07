@@ -1039,14 +1039,14 @@ void *send_thread_func(void *vargp) {
 				pthread_mutex_unlock(&write_ext_mutex);
 			}
 
-			// PJ_LOG(1, (THIS_FILE, "<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription));
-			// PJ_LOG(1, (THIS_FILE, "<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference));
+			PJ_LOG(1, (THIS_FILE, "<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription));
+			PJ_LOG(1, (THIS_FILE, "<<<<>>>> similarest setence is %s, difference =%d\n", similarest, smallest_difference));
 
-			// pjsua_call_info ci;
-			// pjsua_call_get_info(this_call_info->call_id, &ci);
-			// // pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
-			// // this_call_info->rec_slot = PJSUA_INVALID_ID;
-			// pjsua_call_hangup(this_call_info->call_id, 0, NULL, NULL);
+			pjsua_call_info ci;
+			pjsua_call_get_info(this_call_info->call_id, &ci);
+			// pjsua_conf_disconnect(ci.conf_slot, this_call_info->rec_slot);
+			// this_call_info->rec_slot = PJSUA_INVALID_ID;
+			pjsua_call_hangup(this_call_info->call_id, 0, NULL, NULL);
 			PJ_LOG(1, (THIS_FILE, "<<***>> unrecognized below response:\n\"%s\"\n", transcription));
 		}
 	}
