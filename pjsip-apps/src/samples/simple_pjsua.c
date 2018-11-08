@@ -1501,16 +1501,16 @@ void *process_call(void *vargp) {
 			int i = 0;
 			while (fgets(line, sizeof(line), file)) {
 				i++;
-				if(i == pi->number_index )
+				if(i == pi->numberIndex )
 				{
 					break;
 				}
 			}
 		
-			if (i != pi->number_index) {
-				pi->number_index = 0;
+			if (i != pi->numberIndex) {
+				pi->numberIndex = 0;
 			} else {
-				pi->number_index++;
+				pi->numberIndex++;
 			}
 			fclose(file);
 			line[strcspn(line, "\n")] = 0;
@@ -1705,7 +1705,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 		struct profile_info *pi = &current_profile_info;
 		strcpy(pi->name, args[1]);
 		pi->number_commands = 0;
-		pi->number_index = 0;
+		pi->numberIndex = 0;
 		char new_line[300];
 		int n_profile_lines = 0;
 		while (1) {
