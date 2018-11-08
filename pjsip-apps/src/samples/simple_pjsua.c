@@ -46,6 +46,7 @@ struct profile_info {
 	int thread_cnt;
 	int finished_thread_cnt;
 	struct call_to_profile_with_number **call_queue;
+	int numberIndex;
 };
 
 char binary_buf[1000000];
@@ -68,7 +69,6 @@ struct call_info {
 	int done_ext;
 	int tried_cnt;
 	pipe_t* transcriptions;
-	char callerId[20];
 	bool sending;
 	bool shouldSendStop;
 
@@ -87,7 +87,6 @@ struct call_to_profile_with_number {
 	struct profile_info *pi;
 	int number;
 	int tried_cnt;
-	char callerId[20];
 };
 
 struct pjsua_player_eof_data
@@ -252,7 +251,7 @@ void init_call_info(struct call_info *ci) {
 void on_call_end() {
 
 }
-void *make_call_to_profile(void *vargp);
+// void *make_call_to_profile(void *vargp);
 
 void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 	struct call_info *this_call_info;
@@ -302,7 +301,6 @@ void call_hangup_retry(pjsua_call_id call_id, pjsua_call_info *ci) {
 			thread_param->pi = pi;
 			thread_param->number = this_call_info->ci;
 			thread_param->tried_cnt = this_call_info->tried_cnt + 1;
-			strcpy(thread_param->callerId, this_call_info->callerId);
 
 			vector_push_back(pi->call_queue, thread_param);
 		// } else {
@@ -1485,8 +1483,6 @@ void *process_call(void *vargp) {
 			struct call_info *newCall = malloc( sizeof(struct call_info) );
 			init_call_info(newCall);
 
-			strcpy(newCall->callerId, call->callerId);
-
 			vector_push_back(current_calls, newCall);
 
 			struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
@@ -1500,11 +1496,31 @@ void *process_call(void *vargp) {
 
 			pj_str_t uri = pj_str(contact);
 
+			FILE* file = fopen(current_profile_info.phonenumbers, "r");
+			char line[256];
+			int i = 0;
+			while (fgets(line, sizeof(line), file)) {
+				i++;
+				if(i == pi->number_index )
+				{
+					break;
+				}
+			}
+		
+			if (i != pi->number_index) {
+				pi->number_index = 0;
+			} else {
+				pi->number_index++;
+			}
+			fclose(file);
+			line[strcspn(line, "\n")] = 0;
+			PJ_LOG(1, (THIS_FILE, "Phone number: %s\n", line));
+
 			// Custom header
 			pjsua_msg_data msg_data_;
 			pjsip_generic_string_hdr warn;
 			pj_str_t hname = pj_str("Custom");
-			pj_str_t hvalue = pj_str(call->callerId);
+			pj_str_t hvalue = pj_str(line);
 			pjsua_msg_data_init(&msg_data_);
 			pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
 			pj_list_push_back(&msg_data_.hdr_list, &warn);
@@ -1525,62 +1541,60 @@ void *process_call(void *vargp) {
 	return NULL;
 }
 
-void *make_call_to_profile(void *vargp) {
-	sleep(2);
-	pj_status_t status;
-	pj_thread_desc aPJThreadDesc;
-	if (!pj_thread_is_registered()) {
-		pj_thread_t *pjThread;
-		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
-		if (status != PJ_SUCCESS) {
-		}
-	}
+// void *make_call_to_profile(void *vargp) {
+// 	sleep(2);
+// 	pj_status_t status;
+// 	pj_thread_desc aPJThreadDesc;
+// 	if (!pj_thread_is_registered()) {
+// 		pj_thread_t *pjThread;
+// 		status = pj_thread_register(NULL, aPJThreadDesc, &pjThread);
+// 		if (status != PJ_SUCCESS) {
+// 		}
+// 	}
 	
-	PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
-	struct call_to_profile_with_number thread_param = *(struct call_to_profile_with_number *) vargp;
-	free(vargp);
+// 	PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
+// 	struct call_to_profile_with_number thread_param = *(struct call_to_profile_with_number *) vargp;
+// 	free(vargp);
 	
-	struct profile_info *pi = thread_param.pi;
-	int number = thread_param.number;
-	int tried_cnt= thread_param.tried_cnt;
+// 	struct profile_info *pi = thread_param.pi;
+// 	int number = thread_param.number;
+// 	int tried_cnt= thread_param.tried_cnt;
 	
-	char contact[200];
-	sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
-	PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
+// 	char contact[200];
+// 	sprintf(contact, "sip:%s@%s", pi->phone, SIP_DOMAIN);
+// 	PJ_LOG(1, (THIS_FILE, "<<**>> contact=%s\n", contact));
 	
-	struct call_info *newCall = malloc( sizeof(struct call_info) );
-	init_call_info(newCall);
+// 	struct call_info *newCall = malloc( sizeof(struct call_info) );
+// 	init_call_info(newCall);
 
-	strcpy(newCall->callerId, thread_param.callerId);
+// 	vector_push_back(current_calls, newCall);
+// 	struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
 
-	vector_push_back(current_calls, newCall);
-	struct call_info *this_call_info = current_calls[vector_size(current_calls)-1];
+// 	this_call_info->pi = pi;
+// 	this_call_info->ci = number;
+// 	this_call_info->tried_cnt = tried_cnt;
+// 	// Create recognition thread
+// 	pthread_create(&this_call_info->ws_thread_id, NULL, create_websocket,(void *) (this_call_info));
 
-	this_call_info->pi = pi;
-	this_call_info->ci = number;
-	this_call_info->tried_cnt = tried_cnt;
-	// Create recognition thread
-	pthread_create(&this_call_info->ws_thread_id, NULL, create_websocket,(void *) (this_call_info));
+// 	pj_str_t uri = pj_str(contact);
 
-	pj_str_t uri = pj_str(contact);
+//     // Custom header
+//     pjsua_msg_data msg_data_;
+//     pjsip_generic_string_hdr warn;
+//     pj_str_t hname = pj_str("Custom");
+//     pj_str_t hvalue = pj_str(thread_param.callerId);
+//     pjsua_msg_data_init(&msg_data_);
+//     pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
+//     pj_list_push_back(&msg_data_.hdr_list, &warn);
 
-    // Custom header
-    pjsua_msg_data msg_data_;
-    pjsip_generic_string_hdr warn;
-    pj_str_t hname = pj_str("Custom");
-    pj_str_t hvalue = pj_str(thread_param.callerId);
-    pjsua_msg_data_init(&msg_data_);
-    pjsip_generic_string_hdr_init2(&warn, &hname, &hvalue);
-    pj_list_push_back(&msg_data_.hdr_list, &warn);
-
-	status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
-	if (status != PJ_SUCCESS)
-		error_exit("Error making call", status);
+// 	status = pjsua_call_make_call(*shared_acc_id, &uri, 0, NULL, &msg_data_, &this_call_info->call_id);
+// 	if (status != PJ_SUCCESS)
+// 		error_exit("Error making call", status);
 	
-	//TODO: Array of struct is not appropriate - need to use array of struct pointer
+// 	//TODO: Array of struct is not appropriate - need to use array of struct pointer
 	
-	return NULL;
-}
+// 	return NULL;
+// }
 
 void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
     char line[strlen(Line) + 1];
@@ -1691,7 +1705,7 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 		struct profile_info *pi = &current_profile_info;
 		strcpy(pi->name, args[1]);
 		pi->number_commands = 0;
-
+		pi->number_index = 0;
 		char new_line[300];
 		int n_profile_lines = 0;
 		while (1) {
@@ -1764,29 +1778,18 @@ void delimit_by_spaces(char *Line, pjsua_acc_id *acc_id) {
 		shared_acc_id = acc_id;
 
 		// Read phone numbers
-		fp = fopen (pi->phonenumbers, "r");
-		if(fp == NULL) {
-			fclose(fp);
-			PJ_LOG(1, (THIS_FILE, "Phone numbers list doesn't exist\n"));
-			return;
-		}
 		int j = 0;
 		for (j = 0; j < cnt; j ++) {
-			if (fgets(new_line, 20, fp) == NULL)
-				strcpy(new_line, "18008008000");
-			new_line[strcspn(new_line, "\n")] = 0;
 			struct call_to_profile_with_number *thread_param = malloc(sizeof(struct call_to_profile_with_number));
 			// pthread_t make_profile_call_thread_id;
 			thread_param->pi = pi;
 			thread_param->number = j;
 			thread_param->tried_cnt = 0;
-			strcpy(thread_param->callerId, new_line);
 
 			vector_push_back(pi->call_queue, thread_param);
 			// PJ_LOG(1, (THIS_FILE, ">>> just going to create thread for 'Run profile' %d/%d\n", j, cnt));
 			// pthread_create(&make_profile_call_thread_id, NULL, make_call_to_profile, thread_param);
 		}
-		fclose(fp);
 	} else if(current_profile_name) {
 
 		struct call_info *this_call_info;
