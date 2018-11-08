@@ -1500,11 +1500,11 @@ void *process_call(void *vargp) {
 			char line[256];
 			int i = 0;
 			while (fgets(line, sizeof(line), file)) {
-				i++;
 				if(i == pi->numberIndex )
 				{
 					break;
 				}
+				i++;
 			}
 		
 			if (i != pi->numberIndex) {
