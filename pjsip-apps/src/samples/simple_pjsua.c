@@ -29,7 +29,7 @@ char* str_copy(char *str) {
 	return copied;
 }
 
-pthread_mutex_t ws_mutex = PTHREAD_MUTEX_INITIALIZER;
+// pthread_mutex_t ws_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t write_ext_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int bExit;
@@ -874,7 +874,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 				break;
 			}
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE1\n");
-			pthread_mutex_lock(&this_call_info->ws_buf_mutex);
+			// pthread_mutex_lock(&this_call_info->ws_buf_mutex);
 			// printf("LWS_CALLBACK_CLIENT_WRITEABLE2\n");
 			// char *binary_buf = malloc(sizeof(char) * (LWS_PRE + this_call_info->bufferSize));
 			memcpy(&binary_buf[LWS_PRE], this_call_info->globalBuf, this_call_info->bufferSize);
@@ -1025,7 +1025,7 @@ void *send_thread_func(void *vargp) {
 			if (lci < pi->number_commands - 1 && strcmp(pi->cmd[lci+1][0], "EXT") == 0) {
 				PJ_LOG(1, (THIS_FILE, "---------Going to extract----------- prv_ran_cmd_id: %d num_commands: %d \n", lci, pi->number_commands));
 				PJ_LOG(1, (THIS_FILE, "<<**>> current transcription result save start\n %s \n", pi->cmd[lci][0]));
-				pthread_mutex_lock(&write_ext_mutex);
+				// pthread_mutex_lock(&write_ext_mutex);
 
 				FILE *fp = fopen (pi->cmd[lci+1][1], "a"); 
 				PJ_LOG(1, (THIS_FILE, "<start ci=%d cmd=%s param=%s>--------------<start>\n", this_call_info->ci, pi->cmd[lci][0], lcp));
@@ -1034,7 +1034,7 @@ void *send_thread_func(void *vargp) {
 				fprintf(fp, "<end>--------------<end>\n");
 				fclose(fp);
 				this_call_info->done_ext = 1;
-				pthread_mutex_unlock(&write_ext_mutex);
+				// pthread_mutex_unlock(&write_ext_mutex);
 			}
 
 			PJ_LOG(1, (THIS_FILE, "<<***>> call hanging up -start since not recognized:\n\"%s\"\n", transcription));
@@ -1077,7 +1077,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 void * create_websocket(void *vargp) {
-	pthread_mutex_lock(&ws_mutex);
+	// pthread_mutex_lock(&ws_mutex);
 	struct call_info *this_call_info = (struct call_info *)vargp;
 
 	// signal(SIGINT, onSigInt);
@@ -1104,7 +1104,7 @@ void * create_websocket(void *vargp) {
 	CURLcode res = curl_easy_perform(hnd);
 
 	if(res != CURLE_OK) {
-		pthread_mutex_unlock(&ws_mutex);
+		// pthread_mutex_unlock(&ws_mutex);
       	fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
 		return NULL;
@@ -1163,7 +1163,7 @@ void * create_websocket(void *vargp) {
 	
 	if (ctx == NULL)
 	{
-		pthread_mutex_unlock(&ws_mutex);
+		// pthread_mutex_unlock(&ws_mutex);
 		printf("Error creating context\n");
 		return NULL;
 	}
@@ -1187,7 +1187,7 @@ void * create_websocket(void *vargp) {
 
 	// Connect with the client info
 	lws_client_connect_via_info(&clientConnectInfo);
-	pthread_mutex_unlock(&ws_mutex);
+	// pthread_mutex_unlock(&ws_mutex);
 	printf("<<**>> updated wsiTest on create_websocket %X\n", this_call_info->wsiTest);
 	if (this_call_info->wsiTest == NULL)
 	{
@@ -1879,7 +1879,7 @@ int main(int argc, char *argv[])
 		cfg.thread_cnt = 16;
 
 		pjsua_logging_config_default(&log_cfg);
-		log_cfg.console_level = 4;
+		log_cfg.console_level = 1;
 
 		pjsua_media_config_default(&media_cfg);
 		media_cfg.thread_cnt = 16;
