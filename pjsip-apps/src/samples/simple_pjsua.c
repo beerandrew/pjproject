@@ -1978,8 +1978,8 @@ int main(int argc, char *argv[])
     /* Destroy pjsua */
 	if (!didDestroy) {
 		didDestroy = 1;
-		if (pool)
-			pj_pool_release(pool);
+		if (app_pool)
+			pj_pool_release(app_pool);
 
 			pj_caching_pool_destroy(&cp);
     	pjsua_destroy();
