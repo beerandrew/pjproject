@@ -36,7 +36,7 @@ static int bExit;
 int didDestroy = 0;
 
 pj_caching_pool	 cp;
-pj_pool_t		*pool;
+pj_pool_t		*app_pool;
 
 struct profile_info {
 	char phone[20];
@@ -504,7 +504,7 @@ static void on_call_media_state(pjsua_call_id call_id)
 		pjsua_call_id *param = malloc(sizeof(pjsua_call_id));
 		*param = call_id;
 		pj_thread_t *recorder_thread;
-		pj_thread_create(pool, "recorder_thread_func", &recorder_thread_func, param, 0, 0,
+		pj_thread_create(app_pool, "recorder_thread_func", &recorder_thread_func, param, 0, 0,
                               &recorder_thread);
 	}
 }
@@ -834,7 +834,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								pipe_push(p, transcription, 1);
 								pipe_producer_free(p);
 								pj_thread_t *send_thread;
-								pj_thread_create(pool, "send_thread_func", &send_thread_func, NULL, 0, 0,
+								pj_thread_create(app_pool, "send_thread_func", &send_thread_func, NULL, 0, 0,
                               		&send_thread);
 							}
 						}
@@ -1958,7 +1958,7 @@ int main(int argc, char *argv[])
 	pj_caching_pool_init(&cp, NULL, 0);
     pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
 	pj_thread_t *process_call_thread;
-	pj_thread_create(pool, "process_call", &process_call, NULL, 0, 0,
+	pj_thread_create(app_pool, "process_call", &process_call, NULL, 0, 0,
                               &process_call_thread);
 
 	for(;;) {
