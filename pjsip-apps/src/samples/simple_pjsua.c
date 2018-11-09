@@ -1956,7 +1956,7 @@ int main(int argc, char *argv[])
 		delimit_by_spaces(option, &acc_id);
 
 	pj_caching_pool_init(&cp, NULL, 0);
-    pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
+    app_pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
 	pj_thread_t *process_call_thread;
 	pj_thread_create(app_pool, "process_call", &process_call, NULL, 0, 0,
                               &process_call_thread);
