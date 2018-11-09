@@ -837,7 +837,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								pj_caching_pool	 send_cp;
     							pj_pool_t		*send_pool;
 								pj_caching_pool_init(&send_cp, NULL, 0);
-    							app_pool = pj_pool_create( &send_cp.factory, "sipecho", 512, 512, 0);
+    							send_pool = pj_pool_create( &send_cp.factory, "sipecho", 512, 512, 0);
 								pj_thread_create(send_pool, "send_thread_func", &send_thread_func, NULL, 0, 0,
                               		&send_thread);
 							}
