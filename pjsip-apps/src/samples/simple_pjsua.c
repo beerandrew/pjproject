@@ -833,8 +833,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
 								pipe_push(p, transcription, 1);
 								pipe_producer_free(p);
-								pthread_t send_thread_id;
-								pthread_create(&send_thread_id, NULL, send_thread_func, this_call_info);
+								pj_thread_t *send_thread;
+								pj_thread_create(pool, "send_thread_func", &send_thread_func, param, 0, 0,
+                              		&send_thread);
 							}
 						}
 						// if (strstr(transcription, "other options") != NULL) {
