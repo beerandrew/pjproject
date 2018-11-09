@@ -421,7 +421,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	// printf("<<**>> on_putframe ended\n");
 }
 
-void *recorder_thread_func(void *param) {	
+int *recorder_thread_func(void *param) {	
 	pjsua_call_id this_call_id = *(pjsua_call_id *) param;
 	free(param);
 
@@ -834,7 +834,7 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								pipe_push(p, transcription, 1);
 								pipe_producer_free(p);
 								pj_thread_t *send_thread;
-								pj_thread_create(pool, "send_thread_func", &send_thread_func, param, 0, 0,
+								pj_thread_create(pool, "send_thread_func", &send_thread_func, NULL, 0, 0,
                               		&send_thread);
 							}
 						}
@@ -937,7 +937,7 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
     return PJ_SUCCESS;
 }
 
-void *send_thread_func(void *vargp) {
+int *send_thread_func(void *vargp) {
 	struct call_info *this_call_info = (struct call_info *)vargp;
 
 	pj_status_t status;
@@ -1458,7 +1458,7 @@ void save_user_responses() {
 	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses ended"));
 }
 
-void *process_call(void *vargp) {
+int *process_call(void *vargp) {
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
 	if (!pj_thread_is_registered()) {
