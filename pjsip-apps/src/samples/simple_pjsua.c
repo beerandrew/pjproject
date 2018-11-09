@@ -36,7 +36,7 @@ static int bExit;
 int didDestroy = 0;
 
 pj_caching_pool	 cp;
-pj_pool_t		*app_pool;
+pj_pool_t		*pool;
 
 struct profile_info {
 	char phone[20];
@@ -117,7 +117,7 @@ pjmedia_port *player_media_port;
 
 void call_play_digit(pjsua_call_id call_id, const char *digits);
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args);
-int send_thread_func(void *vargp);
+void *send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
 	this_call_info->sending = 1;
@@ -421,7 +421,7 @@ pj_status_t	on_putframe(pjmedia_port* port, pjmedia_frame* frame, unsigned rec_i
 	// printf("<<**>> on_putframe ended\n");
 }
 
-int recorder_thread_func(void *param) {	
+void *recorder_thread_func(void *param) {	
 	pjsua_call_id this_call_id = *(pjsua_call_id *) param;
 	free(param);
 
@@ -501,11 +501,10 @@ static void on_call_media_state(pjsua_call_id call_id)
     pjsua_call_get_info(call_id, &ci);
 
     if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
+		pthread_t rec_thread_id; 
 		pjsua_call_id *param = malloc(sizeof(pjsua_call_id));
 		*param = call_id;
-		pj_thread_t *recorder_thread;
-		pj_thread_create(app_pool, "recorder_thread_func", &recorder_thread_func, param, 0, 0,
-                              &recorder_thread);
+		pthread_create(&rec_thread_id, NULL, recorder_thread_func, param);
 	}
 }
 
@@ -833,13 +832,9 @@ static int callback_test(struct lws* wsi, enum lws_callback_reasons reason, void
 								pipe_producer_t* p = pipe_producer_new(this_call_info->transcriptions);
 								pipe_push(p, transcription, 1);
 								pipe_producer_free(p);
-								pj_thread_t *send_thread;
-								pj_caching_pool	 send_cp;
-    							pj_pool_t		*send_pool;
-								pj_caching_pool_init(&send_cp, &pj_pool_factory_default_policy, 0);
-    							send_pool = pj_pool_create( &send_cp.factory, "send_cp", 512, 512, 0);
-								pj_thread_create(send_pool, "send_thread_func", &send_thread_func, NULL, 0, 0,
-                              		&send_thread);
+								pj_thread_t *send_thread_id;
+								pj_thread_create(pool, "process_call", &send_thread_func, this_call_info, 0, 0,
+                              		&send_thread_id);
 							}
 						}
 						// if (strstr(transcription, "other options") != NULL) {
@@ -1058,7 +1053,7 @@ int send_thread_func(void *vargp) {
 		}
 	}
 	
-	return NULL;
+	return 0;
 }
 
 struct MemoryStruct {
@@ -1462,7 +1457,7 @@ void save_user_responses() {
 	PJ_LOG(1, (THIS_FILE, "<<**>> save_user_responses ended"));
 }
 
-int process_call(void *vargp) {
+void *process_call(void *vargp) {
 	pj_status_t status;
 	pj_thread_desc aPJThreadDesc;
 	if (!pj_thread_is_registered()) {
@@ -1960,11 +1955,10 @@ int main(int argc, char *argv[])
 		delimit_by_spaces(option, &acc_id);
 
 	pj_caching_pool_init(&cp, NULL, 0);
-    app_pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
-	pj_thread_t *process_call_thread;
-	pj_thread_create(app_pool, "process_call", &process_call, NULL, 0, 0,
-                              &process_call_thread);
+    pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
 
+		pthread_t process_call_thread_id;
+	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
 	for(;;) {
 		if (fgets(option, sizeof(option), stdin) == NULL) {
 			break;
@@ -1982,10 +1976,6 @@ int main(int argc, char *argv[])
     /* Destroy pjsua */
 	if (!didDestroy) {
 		didDestroy = 1;
-		if (app_pool)
-			pj_pool_release(app_pool);
-
-			pj_caching_pool_destroy(&cp);
     	pjsua_destroy();
 	}
 
