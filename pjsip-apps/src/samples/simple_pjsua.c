@@ -501,10 +501,11 @@ static void on_call_media_state(pjsua_call_id call_id)
     pjsua_call_get_info(call_id, &ci);
 
     if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
-		pthread_t rec_thread_id; 
 		pjsua_call_id *param = malloc(sizeof(pjsua_call_id));
 		*param = call_id;
-		pthread_create(&rec_thread_id, NULL, recorder_thread_func, param);
+		pj_thread_t *recorder_thread;
+		pj_thread_create(pool, "recorder_thread_func", &recorder_thread_func, param, 0, 0,
+                              &recorder_thread);
 	}
 }
 
