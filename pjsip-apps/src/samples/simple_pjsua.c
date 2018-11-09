@@ -117,7 +117,7 @@ pjmedia_port *player_media_port;
 
 void call_play_digit(pjsua_call_id call_id, const char *digits);
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args);
-void *send_thread_func(void *vargp);
+int send_thread_func(void *vargp);
 
 void on_dial_command(struct call_info *this_call_info, char *dial_number) {
 	this_call_info->sending = 1;
