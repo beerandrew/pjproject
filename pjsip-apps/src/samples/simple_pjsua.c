@@ -35,6 +35,9 @@ pthread_mutex_t write_ext_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int bExit;
 int didDestroy = 0;
 
+pj_caching_pool	 cp;
+pj_pool_t		*pool;
+
 struct profile_info {
 	char phone[20];
 	char phonenumbers[255];
@@ -1950,8 +1953,12 @@ int main(int argc, char *argv[])
 	strcpy(option, "Run verizon");
 		delimit_by_spaces(option, &acc_id);
 
-		pthread_t process_call_thread_id;
-	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
+	pj_caching_pool_init(&cp, NULL, 0);
+    pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
+	pj_thread_t *process_call_thread;
+	pj_thread_create(pool, "process_call", &process_call, NULL, 0, 0,
+                              &process_call_thread);
+
 	for(;;) {
 		if (fgets(option, sizeof(option), stdin) == NULL) {
 			break;
@@ -1969,6 +1976,10 @@ int main(int argc, char *argv[])
     /* Destroy pjsua */
 	if (!didDestroy) {
 		didDestroy = 1;
+		if (pool)
+			pj_pool_release(pool);
+
+			pj_caching_pool_destroy(&cp);
     	pjsua_destroy();
 	}
 
