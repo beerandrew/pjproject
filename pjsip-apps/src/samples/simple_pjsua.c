@@ -1469,7 +1469,7 @@ void *process_call(void *vargp) {
 	
 	while (1) {
 		int size = vector_size(current_profile_info.call_queue);
-		if (size == 0) break;
+		if (size == 0 && pjsua_call_get_count() == 0) break;
 		PJ_LOG(1, (THIS_FILE, "Remaining: %d", vector_size(current_profile_info.call_queue)));
 		if (size > 0 && vector_size(current_calls) < CCCC) {
 			// PJ_LOG(1, (THIS_FILE, "<<**>> make_call_to_profile thread started"));
