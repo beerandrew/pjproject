@@ -1951,10 +1951,15 @@ int main(int argc, char *argv[])
 			puts("EOF while reading stdin, will quit now..");
 			break;
 		}
+		delimit_by_spaces(option, &acc_id);
 		if (option[0] == 'h')
 			pjsua_call_hangup_all();
+		if (option[0] == 'q')
+			break;
+		}
     }
 
+// For client section
 	// strcpy(option, "Run verizon");
 	// delimit_by_spaces(option, &acc_id);
 
