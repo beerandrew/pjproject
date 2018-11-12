@@ -1936,42 +1936,41 @@ int main(int argc, char *argv[])
 
 	char option[1000];
     /* Wait until user press "q" to quit. */
-    // for (;;) {
+    for (;;) {
 
-	// 	puts("To create profile, run");
-	// 	puts("\t Profile -C \"profile_name\" phonenumber phonenumberslist.txt\n\n");
+		puts("To create profile, run");
+		puts("\t Profile -C \"profile_name\" phonenumber phonenumberslist.txt\n\n");
 
-	// 	puts("To provide instructions to the profile, run");
-	// 	puts("\t Profile -I \"profile_name\"\n\n");
+		puts("To provide instructions to the profile, run");
+		puts("\t Profile -I \"profile_name\"\n\n");
 
-	// 	puts("After you finished instructions, run");
-	// 	puts("\t Profile -S \"profile_name\"\n\n");
+		puts("After you finished instructions, run");
+		puts("\t Profile -S \"profile_name\"\n\n");
 
-	// 	if (fgets(option, sizeof(option), stdin) == NULL) {
-	// 		puts("EOF while reading stdin, will quit now..");
-	// 		break;
-	// 	}
-	strcpy(option, "Run verizon");
-		delimit_by_spaces(option, &acc_id);
-
-	pj_caching_pool_init(&cp, NULL, 0);
-    pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
-
-		pthread_t process_call_thread_id;
-	pthread_create(&process_call_thread_id, NULL, process_call, NULL);
-	for(;;) {
 		if (fgets(option, sizeof(option), stdin) == NULL) {
+			puts("EOF while reading stdin, will quit now..");
 			break;
 		}
-			if (option[0] == 'q')
-			break;
-	}
+		if (option[0] == 'h')
+			pjsua_call_hangup_all();
+    }
 
+	// strcpy(option, "Run verizon");
+	// delimit_by_spaces(option, &acc_id);
+
+	// pj_caching_pool_init(&cp, NULL, 0);
+    // pool = pj_pool_create( &cp.factory, "sipecho", 512, 512, 0);
+
+	// 	pthread_t process_call_thread_id;
+	// pthread_create(&process_call_thread_id, NULL, process_call, NULL);
+	// for(;;) {
+	// 	if (fgets(option, sizeof(option), stdin) == NULL) {
+	// 		break;
+	// 	}
+	// 		if (option[0] == 'q')
+	// 		break;
+	// }
 	
-
-	// 	if (option[0] == 'h')
-	// 		pjsua_call_hangup_all();
-    // }
 
     /* Destroy pjsua */
 	if (!didDestroy) {
