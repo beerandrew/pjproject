@@ -1952,9 +1952,9 @@ int main(int argc, char *argv[])
 			break;
 		}
 		delimit_by_spaces(option, &acc_id);
-		if (option[0] == 'h')
+		if (option[0] == 'h'){
 			pjsua_call_hangup_all();
-		if (option[0] == 'q')
+		if (option[0] == 'q'){
 			break;
 		}
     }
